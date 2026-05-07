@@ -6,7 +6,7 @@ export function renderNavbar(root) {
     <div class="navbar-inner">
       <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle menu">☰</button>
       <div class="navbar-title">
-        <span>لوحة إدارة مالاز</span>
+        <span>لوحة إدارة ملاز</span>
       </div>
       <div class="navbar-actions">
         <button class="quick-action" id="mobile-add-order-button">+ طلب</button>

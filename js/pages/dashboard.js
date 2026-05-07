@@ -1,5 +1,6 @@
 import { api } from '../api.js';
 import { renderModal } from '../components/modal.js';
+import { showToast } from '../components/toast.js';
 
 const pageRoot = document.getElementById('page-content');
 const modalRoot = document.getElementById('modal-root');
@@ -155,16 +156,20 @@ async function renderAddOrderModal() {
     <div class="form-row">
       <label>
         العميل
-        <select id="order-client" class="select-field">${clientOptions}</select>
+        <div style="display: flex; gap: 10px; align-items: flex-end;">
+          <select id="order-client" class="select-field" style="flex: 1;">${clientOptions}</select>
+          <button class="button-secondary" id="add-client-button" style="padding: 14px 16px; min-height: 44px;">+ عميل</button>
+        </div>
       </label>
-      <button class="button-secondary" id="add-client-button">+ عميل جديد</button>
     </div>
     <div class="form-row">
       <label>
         الشاليه
-        <select id="order-chalet" class="select-field">${chaletOptions}</select>
+        <div style="display: flex; gap: 10px; align-items: flex-end;">
+          <select id="order-chalet" class="select-field" style="flex: 1;">${chaletOptions}</select>
+          <button class="button-secondary" id="add-chalet-button" style="padding: 14px 16px; min-height: 44px;">+ شاليه</button>
+        </div>
       </label>
-      <button class="button-secondary" id="add-chalet-button">+ شاليه جديد</button>
     </div>
     <div class="form-row columns-2">
       <label>
@@ -221,32 +226,110 @@ async function renderAddOrderModal() {
 
   clientSelect?.addEventListener('change', refreshChalets);
 
-  addClientButton?.addEventListener('click', async () => {
-    const name = window.prompt('اسم العميل الجديد');
-    const phone = window.prompt('رقم الهاتف');
-    const type = window.prompt('نوع العميل (owner أو broker)', 'owner');
+  // Add new client modal
+  addClientButton?.addEventListener('click', () => {
+    const clientModalContent = `
+      <div class="form-row">
+        <label>
+          الاسم
+          <input id="new-client-name" type="text" class="input-field" placeholder="اسم العميل" />
+        </label>
+        <label>
+          الهاتف
+          <input id="new-client-phone" type="tel" class="input-field" placeholder="رقم الهاتف" />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          النوع
+          <select id="new-client-type" class="select-field">
+            <option value="owner">Owner</option>
+            <option value="broker">Broker</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="button-primary" id="save-new-client-button">حفظ العميل</button>
+      </div>
+    `;
+    
+    renderModal(modalRoot, 'إضافة عميل جديد', clientModalContent);
+    
+    const saveNewClientButton = modalRoot.querySelector('#save-new-client-button');
+    saveNewClientButton?.addEventListener('click', async () => {
+      const name = modalRoot.querySelector('#new-client-name')?.value.trim();
+      const phone = modalRoot.querySelector('#new-client-phone')?.value.trim();
+      const type = modalRoot.querySelector('#new-client-type')?.value;
 
-    if (!name || !phone) return;
-    const newClient = await api.addClient({ type: type || 'owner', name, phone });
-    clientSelect.insertAdjacentHTML('beforeend', `<option value="${newClient.client_id}" selected>${newClient.name}</option>`);
-    clientSelect.value = newClient.client_id;
-    refreshChalets();
+      if (!name || !phone) {
+        showToast('error', 'الرجاء تعبئة الاسم والهاتف');
+        return;
+      }
+
+      const newClient = await api.addClient({ name, phone, type });
+      showToast('success', 'تم إضافة العميل بنجاح');
+      
+      // Re-render the order modal with updated clients
+      await renderAddOrderModal();
+    });
   });
 
-  addChaletButton?.addEventListener('click', async () => {
-    const name = window.prompt('اسم الشاليه');
-    const location = window.prompt('الموقع');
-    const details = window.prompt('تفاصيل الشاليه');
-    const clientId = clientSelect.value;
-    if (!name || !clientId) return;
-    const newChalet = await api.addChalet({ client_id: clientId, chalet_name: name, location, details });
-    chaletSelect.insertAdjacentHTML('beforeend', `<option value="${newChalet.chalet_id}" selected>${newChalet.chalet_name}</option>`);
-    chaletSelect.value = newChalet.chalet_id;
+  // Add new chalet modal
+  addChaletButton?.addEventListener('click', () => {
+    const currentClients = clients;
+    const chaletModalContent = `
+      <div class="form-row">
+        <label>
+          الشاليه
+          <input id="new-chalet-name" type="text" class="input-field" placeholder="اسم الشاليه" />
+        </label>
+        <label>
+          الموقع
+          <input id="new-chalet-location" type="text" class="input-field" placeholder="الموقع" />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          العميل
+          <select id="new-chalet-client" class="select-field">
+            ${currentClients.map((client) => `<option value="${client.client_id}">${client.name}</option>`).join('')}
+          </select>
+        </label>
+        <label>
+          التفاصيل
+          <textarea id="new-chalet-details" rows="3" class="textarea-field" placeholder="تفاصيل الشاليه"></textarea>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="button-primary" id="save-new-chalet-button">حفظ الشاليه</button>
+      </div>
+    `;
+    
+    renderModal(modalRoot, 'إضافة شاليه جديد', chaletModalContent);
+    
+    const saveNewChaletButton = modalRoot.querySelector('#save-new-chalet-button');
+    saveNewChaletButton?.addEventListener('click', async () => {
+      const name = modalRoot.querySelector('#new-chalet-name')?.value.trim();
+      const location = modalRoot.querySelector('#new-chalet-location')?.value.trim();
+      const details = modalRoot.querySelector('#new-chalet-details')?.value.trim();
+      const clientId = modalRoot.querySelector('#new-chalet-client')?.value;
+
+      if (!name || !location || !clientId) {
+        showToast('error', 'الرجاء تعبئة جميع الحقول');
+        return;
+      }
+
+      const newChalet = await api.addChalet({ client_id: clientId, chalet_name: name, location, details });
+      showToast('success', 'تم إضافة الشاليه بنجاح');
+      
+      // Re-render the order modal with updated chalets
+      await renderAddOrderModal();
+    });
   });
 
   saveOrderButton?.addEventListener('click', async () => {
     if (!clientSelect.value || !chaletSelect.value || !priceInput.value) {
-      window.alert('الرجاء تعبئة العميل والشاليه والسعر.');
+      showToast('error', 'الرجاء تعبئة العميل والشاليه والسعر');
       return;
     }
     await api.addOrder({
@@ -257,6 +340,7 @@ async function renderAddOrderModal() {
       notes: notesInput.value,
       created_at: dateInput.value,
     });
+    showToast('success', 'تم إضافة الطلب بنجاح');
     modalRoot.innerHTML = '';
     renderDashboard();
   });
