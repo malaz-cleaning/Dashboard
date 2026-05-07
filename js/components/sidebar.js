@@ -2,10 +2,10 @@ export function renderSidebar(root) {
   if (!root) return;
   root.innerHTML = `
     <div class="brand-block">
-      <div class="brand-logo">MC</div>
+      <div class="brand-logo">M</div>
       <div>
-        <p class="brand-name">Malaz Cleaning</p>
-        <p class="brand-subtitle">لوحة التحكم</p>
+        <p class="brand-name">ملاذ</p>
+        <p class="brand-subtitle">لوحة تحكم</p>
       </div>
     </div>
     <nav class="sidebar-nav">
