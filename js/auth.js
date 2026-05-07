@@ -1,5 +1,10 @@
-const FIREBASE_API_KEY = 'YOUR_FIREBASE_API_KEY_HERE'; // Replace with your actual Firebase API key
-const FIREBASE_AUTH_URL = 'https://identitytoolkit.googleapis.com/v1/accounts';
+import { firebaseAuth } from './firebase.js';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from 'firebase/auth';
 
 const ALLOWED_EMAILS = new Set([
   'admin@malaz.com',
@@ -9,29 +14,27 @@ const ALLOWED_EMAILS = new Set([
 ]);
 
 async function firebaseSignUp(email, password) {
-  const response = await fetch(`${FIREBASE_AUTH_URL}:signUp?key=${FIREBASE_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email,
-      password,
-      returnSecureToken: true,
-    }),
-  });
-  return response.json();
+  try {
+    const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+    return {
+      idToken: await userCredential.user.getIdToken(),
+      email: userCredential.user.email,
+    };
+  } catch (error) {
+    return { error: { message: error.message } };
+  }
 }
 
 async function firebaseSignIn(email, password) {
-  const response = await fetch(`${FIREBASE_AUTH_URL}:signInWithPassword?key=${FIREBASE_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email,
-      password,
-      returnSecureToken: true,
-    }),
-  });
-  return response.json();
+  try {
+    const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+    return {
+      idToken: await userCredential.user.getIdToken(),
+      email: userCredential.user.email,
+    };
+  } catch (error) {
+    return { error: { message: error.message } };
+  }
 }
 
 export const auth = {
@@ -48,7 +51,7 @@ export const auth = {
     try {
       const signInResult = await firebaseSignIn(normalizedEmail, password);
       if (signInResult.error) {
-        if (signInResult.error.message === 'EMAIL_NOT_FOUND') {
+        if (signInResult.error.message.includes('user-not-found')) {
           // Create the allowed account in Firebase if it does not exist yet.
           const signUpResult = await firebaseSignUp(normalizedEmail, password);
           if (signUpResult.error) {
@@ -79,6 +82,7 @@ export const auth = {
 
   logout() {
     localStorage.removeItem('authToken');
+    signOut(firebaseAuth).catch(error => console.error('Logout error:', error));
     window.location.href = 'login.html';
   },
 };

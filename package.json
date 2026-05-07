@@ -1,0 +1,17 @@
+{
+  "name": "malaz-cleaning-dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "لوحة تحكم شركة مالاز للتنظيف",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "firebase": "^10.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
