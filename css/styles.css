@@ -483,6 +483,20 @@ textarea {
     padding: 6px 8px !important;
     min-height: 32px;
   }
+  /* Mobile totals styling */
+  .totals-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .total-card {
+    padding: 14px !important;
+  }
+  .total-card h4 {
+    font-size: 0.9rem !important;
+  }
+  .total-card .amount {
+    font-size: 1.3rem !important;
+  }
 }
 .page-title {
   font-size: 1.1rem;

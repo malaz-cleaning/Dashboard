@@ -324,32 +324,50 @@ export async function renderOrders() {
           <tbody id="orders-table-body"></tbody>
         </table>
       </div>
-      <div class="card" style="margin-top: 20px; padding: 16px; background: rgba(148, 163, 184, 0.08); border-radius: 12px;">
-        <h3 style="margin: 0 0 16px 0; font-size: 1.1rem;">الإجماليات حسب الحالة</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #f97316;">
-            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">معلقة</p>
-            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-pending">0</span></p>
+      <div class="card" style="margin-top: 20px; padding: 20px; background: rgba(148, 163, 184, 0.08); border-radius: 12px;">
+        <h3 style="margin: 0 0 20px 0; font-size: 1.2rem; font-weight: 600; color: #1e293b;">الإجماليات حسب الحالة</h3>
+        <div class="totals-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+          <div class="total-card pending-card" style="padding: 16px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border: 2px solid #f59e0b; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 50%;"></div>
+              <p style="margin: 0; font-size: 0.95rem; font-weight: 600; color: #92400e;">معلقة</p>
+            </div>
+            <p class="amount" style="margin: 0; font-size: 1.4rem; font-weight: 800; color: #92400e;">EGP <span id="total-pending" style="font-weight: 900;">0</span></p>
           </div>
-          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #3b82f6;">
-            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">قيد التنفيذ</p>
-            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-in_progress">0</span></p>
+          <div class="total-card in-progress-card" style="padding: 16px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-radius: 12px; border: 2px solid #3b82f6; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 50%;"></div>
+              <p style="margin: 0; font-size: 0.95rem; font-weight: 600; color: #1e40af;">قيد التنفيذ</p>
+            </div>
+            <p class="amount" style="margin: 0; font-size: 1.4rem; font-weight: 800; color: #1e40af;">EGP <span id="total-in_progress" style="font-weight: 900;">0</span></p>
           </div>
-          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #eab308;">
-            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">تمت ولم يُدفع</p>
-            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-done_unpaid">0</span></p>
+          <div class="total-card done-unpaid-card" style="padding: 16px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border: 2px solid #eab308; box-shadow: 0 2px 8px rgba(234, 179, 8, 0.15);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <div style="width: 12px; height: 12px; background: #eab308; border-radius: 50%;"></div>
+              <p style="margin: 0; font-size: 0.95rem; font-weight: 600; color: #92400e;">تمت ولم يُدفع</p>
+            </div>
+            <p class="amount" style="margin: 0; font-size: 1.4rem; font-weight: 800; color: #92400e;">EGP <span id="total-done_unpaid" style="font-weight: 900;">0</span></p>
           </div>
-          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #10b981;">
-            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">تمت ودُفع</p>
-            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-done_paid">0</span></p>
+          <div class="total-card done-paid-card" style="padding: 16px; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 12px; border: 2px solid #10b981; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <div style="width: 12px; height: 12px; background: #10b981; border-radius: 50%;"></div>
+              <p style="margin: 0; font-size: 0.95rem; font-weight: 600; color: #047857;">تمت ودُفع</p>
+            </div>
+            <p class="amount" style="margin: 0; font-size: 1.4rem; font-weight: 800; color: #047857;">EGP <span id="total-done_paid" style="font-weight: 900;">0</span></p>
           </div>
-          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #ef4444;">
-            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">ملغاة</p>
-            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-cancelled">0</span></p>
+          <div class="total-card cancelled-card" style="padding: 16px; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-radius: 12px; border: 2px solid #ef4444; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 50%;"></div>
+              <p style="margin: 0; font-size: 0.95rem; font-weight: 600; color: #dc2626;">ملغاة</p>
+            </div>
+            <p class="amount" style="margin: 0; font-size: 1.4rem; font-weight: 800; color: #dc2626;">EGP <span id="total-cancelled" style="font-weight: 900;">0</span></p>
           </div>
-          <div style="padding: 12px; background: #10b981; border-radius: 8px; border-right: 4px solid #059669;">
-            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: white;">الإجمالي العام</p>
-            <p style="margin: 0; font-size: 1.2rem; font-weight: 700; color: white;">EGP <span id="total-all">0</span></p>
+          <div class="total-card total-all-card" style="padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; border: 2px solid #047857; box-shadow: 0 2px 8px rgba(4, 120, 87, 0.3);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <div style="width: 12px; height: 12px; background: white; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255,255,255,0.3);"></div>
+              <p style="margin: 0; font-size: 0.95rem; font-weight: 600; color: white;">الإجمالي العام</p>
+            </div>
+            <p class="amount" style="margin: 0; font-size: 1.4rem; font-weight: 800; color: white;">EGP <span id="total-all" style="font-weight: 900;">0</span></p>
           </div>
         </div>
       </div>
