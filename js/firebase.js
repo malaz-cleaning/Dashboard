@@ -1,7 +1,5 @@
 // Import the functions you need from the SDKs
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getDatabase } from "firebase/database";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,10 +16,15 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication
-export const firebaseAuth = getAuth(app);
+// Lazy load Auth and Database only when needed
+export async function getFirebaseAuth() {
+  const { getAuth } = await import('firebase/auth');
+  return getAuth(app);
+}
 
-// Initialize Realtime Database
-export const database = getDatabase(app);
+export async function getFirebaseDatabase() {
+  const { getDatabase } = await import('firebase/database');
+  return getDatabase(app);
+}
 
 export default app;

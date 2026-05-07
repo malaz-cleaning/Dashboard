@@ -1,9 +1,8 @@
-import { firebaseAuth } from './firebase.js';
+import { getFirebaseAuth } from './firebase.js';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged,
 } from 'firebase/auth';
 
 const ALLOWED_EMAILS = new Set([
@@ -13,9 +12,19 @@ const ALLOWED_EMAILS = new Set([
   'yousef@malaz.com'
 ]);
 
+let firebaseAuth = null;
+
+async function getAuth() {
+  if (!firebaseAuth) {
+    firebaseAuth = await getFirebaseAuth();
+  }
+  return firebaseAuth;
+}
+
 async function firebaseSignUp(email, password) {
   try {
-    const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+    const auth = await getAuth();
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     return {
       idToken: await userCredential.user.getIdToken(),
       email: userCredential.user.email,
@@ -27,7 +36,8 @@ async function firebaseSignUp(email, password) {
 
 async function firebaseSignIn(email, password) {
   try {
-    const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+    const auth = await getAuth();
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return {
       idToken: await userCredential.user.getIdToken(),
       email: userCredential.user.email,
@@ -80,9 +90,14 @@ export const auth = {
     return !!this.getToken();
   },
 
-  logout() {
+  async logout() {
     localStorage.removeItem('authToken');
-    signOut(firebaseAuth).catch(error => console.error('Logout error:', error));
+    try {
+      const auth = await getAuth();
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     window.location.href = 'login.html';
   },
 };
