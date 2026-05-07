@@ -325,9 +325,32 @@ export async function renderOrders() {
         </table>
       </div>
       <div class="card" style="margin-top: 20px; padding: 16px; background: rgba(148, 163, 184, 0.08); border-radius: 12px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="margin: 0; font-size: 1.1rem;">الإجمالي</h3>
-          <p style="margin: 0; font-size: 1.3rem; font-weight: 700; color: #10b981;">EGP <span id="total-amount">0</span></p>
+        <h3 style="margin: 0 0 16px 0; font-size: 1.1rem;">الإجماليات حسب الحالة</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #f97316;">
+            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">معلقة</p>
+            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-pending">0</span></p>
+          </div>
+          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #3b82f6;">
+            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">قيد التنفيذ</p>
+            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-in_progress">0</span></p>
+          </div>
+          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #eab308;">
+            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">تمت ولم يُدفع</p>
+            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-done_unpaid">0</span></p>
+          </div>
+          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #10b981;">
+            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">تمت ودُفع</p>
+            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-done_paid">0</span></p>
+          </div>
+          <div style="padding: 12px; background: white; border-radius: 8px; border-right: 4px solid #ef4444;">
+            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">ملغاة</p>
+            <p style="margin: 0; font-size: 1.2rem; font-weight: 700;">EGP <span id="total-cancelled">0</span></p>
+          </div>
+          <div style="padding: 12px; background: #10b981; border-radius: 8px; border-right: 4px solid #059669;">
+            <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: white;">الإجمالي العام</p>
+            <p style="margin: 0; font-size: 1.2rem; font-weight: 700; color: white;">EGP <span id="total-all">0</span></p>
+          </div>
         </div>
       </div>
     </section>
@@ -338,7 +361,12 @@ export async function renderOrders() {
   const clientSelect = pageRoot.querySelector('#order-client-filter');
   const tableBody = pageRoot.querySelector('#orders-table-body');
   const addOrderButton = pageRoot.querySelector('#add-order-button');
-  const totalAmountSpan = pageRoot.querySelector('#total-amount');
+  const totalPendingSpan = pageRoot.querySelector('#total-pending');
+  const totalInProgressSpan = pageRoot.querySelector('#total-in_progress');
+  const totalDoneUnpaidSpan = pageRoot.querySelector('#total-done_unpaid');
+  const totalDonePaidSpan = pageRoot.querySelector('#total-done_paid');
+  const totalCancelledSpan = pageRoot.querySelector('#total-cancelled');
+  const totalAllSpan = pageRoot.querySelector('#total-all');
 
   function updateTable() {
     const filters = {
@@ -349,9 +377,28 @@ export async function renderOrders() {
     const filtered = filterOrders(orders, clients, filters);
     tableBody.innerHTML = renderOrderRows(filtered, clients, chalets);
     
-    // Calculate total
-    const total = filtered.reduce((sum, order) => sum + Number(order.price || 0), 0);
-    totalAmountSpan.textContent = total.toLocaleString();
+    // Calculate totals for each status
+    const totals = {
+      pending: 0,
+      in_progress: 0,
+      done_unpaid: 0,
+      done_paid: 0,
+      cancelled: 0,
+      all: 0,
+    };
+
+    filtered.forEach((order) => {
+      const price = Number(order.price || 0);
+      totals[order.status] = (totals[order.status] || 0) + price;
+      totals.all += price;
+    });
+
+    totalPendingSpan.textContent = totals.pending.toLocaleString();
+    totalInProgressSpan.textContent = totals.in_progress.toLocaleString();
+    totalDoneUnpaidSpan.textContent = totals.done_unpaid.toLocaleString();
+    totalDonePaidSpan.textContent = totals.done_paid.toLocaleString();
+    totalCancelledSpan.textContent = totals.cancelled.toLocaleString();
+    totalAllSpan.textContent = totals.all.toLocaleString();
 
     // Attach event listeners to status selects
     pageRoot.querySelectorAll('.status-select').forEach((select) => {
