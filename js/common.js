@@ -46,7 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const isMobile = window.innerWidth < 1024; // lg breakpoint
 
       if (isMobile) {
-        // Mobile: toggle transform classes
+        // Mobile: open/close sidebar using translate classes
+        sidebar.classList.toggle('translate-x-0');
         sidebar.classList.toggle('-translate-x-full');
       } else {
         // Desktop: toggle width classes
@@ -70,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => {
       const isMobile = window.innerWidth < 1024;
       if (isMobile && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+        sidebar.classList.remove('translate-x-0');
         sidebar.classList.add('-translate-x-full');
       }
     });
