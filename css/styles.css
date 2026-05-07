@@ -88,6 +88,7 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
 }
 .navbar-title {
   color: #f8fafc;
@@ -96,7 +97,16 @@ textarea {
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.download-button {
+  background: #2563eb;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.download-button:hover {
+  background: #1d4ed8;
 }
 .sidebar-toggle {
   display: none;
