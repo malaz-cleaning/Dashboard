@@ -139,6 +139,17 @@ export const api = {
     return chalets.find((c) => c.chalet_id === chalet_id);
   },
   async updateOrder(order_id, payload) {
+    // If status is being updated, automatically set completed_at for completed statuses
+    if (payload.status) {
+      const currentDate = new Date().toISOString().split('T')[0];
+      if (payload.status === 'done_paid' || payload.status === 'done_unpaid' || payload.status === 'cancelled') {
+        payload.completed_at = currentDate;
+      } else if (payload.status === 'pending' || payload.status === 'in_progress') {
+        // Clear completed_at for non-completed statuses
+        payload.completed_at = '';
+      }
+    }
+
     await firebaseRequest(`/orders/${order_id}`, 'PATCH', payload);
     invalidateCache('orders');
     const orders = await fetchResource('orders');

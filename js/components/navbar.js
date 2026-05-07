@@ -13,282 +13,29 @@ function formatStatusLabel(status) {
   return map[status] || status;
 }
 
-async function ensureJsPdf() {
-  if (window.jspdf && window.jspdf.jsPDF) {
-    return window.jspdf.jsPDF;
-  }
-
-  await new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load jsPDF'));
-    document.head.appendChild(script);
-  });
-
-  if (!window.html2canvas) {
-    await new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load html2canvas'));
-      document.head.appendChild(script);
-    });
-  }
-
-  return window.jspdf.jsPDF;
-}
-
-async function ensureXLSX() {
-  if (window.XLSX) {
-    return window.XLSX;
-  }
-
-  await new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load XLSX'));
-    document.head.appendChild(script);
-  });
-
-  return window.XLSX;
-}
-
-function buildBackupHtml({ orders, clients, chalets }) {
-  const now = new Date().toLocaleString('ar-EG', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
-
-  const orderRows = orders
-    .map((order) => {
-      const client = clients.find((item) => item.client_id === order.client_id) || {};
-      const chalet = chalets.find((item) => item.chalet_id === order.chalet_id) || {};
-      return `
-        <tr>
-          <td>${order.order_id}</td>
-          <td>${client.name || 'غير محدد'}</td>
-          <td>${chalet.chalet_name || 'غير محدد'}</td>
-          <td>${formatStatusLabel(order.status)}</td>
-          <td>${Number(order.price || 0).toLocaleString('ar-EG')} EGP</td>
-          <td>${order.notes ? order.notes.replace(/\n/g, '<br/>') : '-'}</td>
-          <td>${order.created_at}</td>
-          <td>${order.completed_at || '-'}</td>
-        </tr>
-      `;
-    })
-    .join('');
-
-  const clientRows = clients
-    .map((client) => `
-      <tr>
-        <td>${client.client_id}</td>
-        <td>${client.name}</td>
-        <td>${client.phone}</td>
-        <td>${client.type || '-'}</td>
-      </tr>
-    `)
-    .join('');
-
-  const chaletRows = chalets
-    .map((chalet) => {
-      const client = clients.find((item) => item.client_id === chalet.client_id) || {};
-      return `
-        <tr>
-          <td>${chalet.chalet_id}</td>
-          <td>${chalet.chalet_name}</td>
-          <td>${chalet.location}</td>
-          <td>${client.name || 'غير محدد'}</td>
-          <td>${chalet.details || '-'}</td>
-        </tr>
-      `;
-    })
-    .join('');
-
-  return `
-    <div style="font-family: 'Inter', sans-serif; color: #0f172a; width: 100%; padding: 20px;">
-      <div style="margin-bottom: 28px;">
-        <h1 style="margin: 0 0 8px 0; font-size: 24px;">نسخة احتياطية كاملة</h1>
-        <p style="margin: 0; color: #4b5563; font-size: 12px;">تاريخ الإنشاء: ${now}</p>
-      </div>
-
-      <section style="margin-bottom: 26px;">
-        <h2 style="margin: 0 0 12px 0; font-size: 18px; color: #111827;">الطلبات</h2>
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-          <thead>
-            <tr style="background: #1f2937; color: white; text-align: left;">
-              <th style="padding: 10px; border: 1px solid #d1d5db;">رقم الطلب</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">العميل</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">الشاليه</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">الحالة</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">السعر</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">الملاحظات</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">تاريخ الإنشاء</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">تاريخ الإنجاز</th>
-            </tr>
-          </thead>
-          <tbody>${orderRows}</tbody>
-        </table>
-      </section>
-
-      <section style="margin-bottom: 26px;">
-        <h2 style="margin: 0 0 12px 0; font-size: 18px; color: #111827;">العملاء</h2>
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-          <thead>
-            <tr style="background: #1f2937; color: white; text-align: left;">
-              <th style="padding: 10px; border: 1px solid #d1d5db;">معرف العميل</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">الاسم</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">الهاتف</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">النوع</th>
-            </tr>
-          </thead>
-          <tbody>${clientRows}</tbody>
-        </table>
-      </section>
-
-      <section>
-        <h2 style="margin: 0 0 12px 0; font-size: 18px; color: #111827;">الشاليهات</h2>
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-          <thead>
-            <tr style="background: #1f2937; color: white; text-align: left;">
-              <th style="padding: 10px; border: 1px solid #d1d5db;">معرف الشاليه</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">اسم الشاليه</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">الموقع</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">العميل</th>
-              <th style="padding: 10px; border: 1px solid #d1d5db;">التفاصيل</th>
-            </tr>
-          </thead>
-          <tbody>${chaletRows}</tbody>
-        </table>
-      </section>
-    </div>
-  `;
-}
-
-async function fetchBackupData() {
-  const [orders, clients, chalets] = await Promise.all([
-    api.getOrders(),
-    api.getClients(),
-    api.getChalets(),
-  ]);
-  return { orders, clients, chalets };
-}
-
-async function downloadPdfBackup() {
-  const button = document.getElementById('download-backup-pdf');
-  if (button) button.disabled = true;
-
-  try {
-    const data = await fetchBackupData();
-    const jsPDFConstructor = await ensureJsPdf();
-    const doc = new jsPDFConstructor({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-    const container = document.createElement('div');
-    container.style.width = '1100px';
-    container.style.padding = '20px';
-    container.style.direction = 'rtl';
-    container.style.textAlign = 'right';
-    container.innerHTML = buildBackupHtml(data);
-    container.style.fontFamily = 'Inter, sans-serif';
-    container.style.background = '#ffffff';
-    container.style.color = '#111827';
-    container.style.lineHeight = '1.4';
-    container.style.boxSizing = 'border-box';
-    container.style.maxWidth = '1100px';
-    container.style.margin = '0 auto';
-    container.style.fontSize = '11px';
-
-    document.body.appendChild(container);
-    await doc.html(container, {
-      callback: () => {
-        const date = new Date().toISOString().slice(0, 10);
-        doc.save(`backup-malaz-${date}.pdf`);
-        container.remove();
-      },
-      x: 20,
-      y: 20,
-      html2canvas: {
-        scale: 1.4,
-        useCORS: true,
-      },
-      windowWidth: 1100,
-    });
-  } catch (error) {
-    console.error(error);
-    showToast('error', 'حدث خطأ أثناء إنشاء نسخة PDF. حاول مرة أخرى.');
-  } finally {
-    if (button) button.disabled = false;
-  }
-}
-
 async function downloadExcelBackup() {
   const button = document.getElementById('download-backup-xlsx');
   if (button) button.disabled = true;
 
   try {
-    const XLSX = await ensureXLSX();
-    const data = await fetchBackupData();
-
-    const orderRows = data.orders.map((order) => {
-      const client = data.clients.find((item) => item.client_id === order.client_id) || {};
-      const chalet = data.chalets.find((item) => item.chalet_id === order.chalet_id) || {};
-      return {
-        'رقم الطلب': order.order_id,
-        'العميل': client.name || 'غير محدد',
-        'الشاليه': chalet.chalet_name || 'غير محدد',
-        'الحالة': formatStatusLabel(order.status),
-        'السعر (EGP)': Number(order.price || 0),
-        'الملاحظات': order.notes || '-',
-        'تاريخ الإنشاء': order.created_at,
-        'تاريخ الإنجاز': order.completed_at || '-',
-      };
+    const response = await fetch('http://localhost:3001/api/backup/manual', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
-    const clientRows = data.clients.map((client) => ({
-      'معرف العميل': client.client_id,
-      'الاسم': client.name,
-      'الهاتف': client.phone,
-      'النوع': client.type || '-',
-    }));
+    const result = await response.json();
 
-    const chaletRows = data.chalets.map((chalet) => {
-      const client = data.clients.find((item) => item.client_id === chalet.client_id) || {};
-      return {
-        'معرف الشاليه': chalet.chalet_id,
-        'اسم الشاليه': chalet.chalet_name,
-        'الموقع': chalet.location,
-        'العميل': client.name || 'غير محدد',
-        'التفاصيل': chalet.details || '-',
-      };
-    });
-
-    const wb = XLSX.utils.book_new();
-    const ordersSheet = XLSX.utils.json_to_sheet(orderRows);
-    const clientsSheet = XLSX.utils.json_to_sheet(clientRows);
-    const chaletsSheet = XLSX.utils.json_to_sheet(chaletRows);
-
-    ordersSheet['!cols'] = [
-      { wch: 12 },
-      { wch: 20 },
-      { wch: 20 },
-      { wch: 18 },
-      { wch: 12 },
-      { wch: 30 },
-      { wch: 14 },
-      { wch: 14 },
-    ];
-    clientsSheet['!cols'] = [{ wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 14 }];
-    chaletsSheet['!cols'] = [{ wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 30 }];
-
-    XLSX.utils.book_append_sheet(wb, ordersSheet, 'الطلبات');
-    XLSX.utils.book_append_sheet(wb, clientsSheet, 'العملاء');
-    XLSX.utils.book_append_sheet(wb, chaletsSheet, 'الشاليهات');
-
-    const date = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(wb, `backup-malaz-${date}.xlsx`);
+    if (result.success) {
+      showToast('success', 'تم إنشاء النسخة الاحتياطية وحفظها على Google Drive بنجاح ✅');
+      console.log('Backup uploaded:', result.file);
+    } else {
+      showToast('error', result.message || 'فشل إنشاء النسخة الاحتياطية');
+    }
   } catch (error) {
-    console.error(error);
-    showToast('error', 'حدث خطأ أثناء إنشاء ملف Excel. حاول مرة أخرى.');
+    console.error('Backup error:', error);
+    showToast('error', 'خطأ: تأكد من أن خادم Backup يعمل على المنفذ 3001');
   } finally {
     if (button) button.disabled = false;
   }
@@ -296,25 +43,104 @@ async function downloadExcelBackup() {
 
 export function renderNavbar(root) {
   if (!root) return;
+
+  const currentPage = getCurrentPage();
+  const pageTitles = {
+    'index.html': 'لوحة التحكم',
+    'orders.html': 'إدارة الطلبات',
+    'clients.html': 'إدارة العملاء',
+    'chalets.html': 'إدارة الشاليهات',
+    'analytics.html': 'التحليلات'
+  };
+
+  const pageTitle = pageTitles[currentPage] || 'ملاذ كلينينج';
+
   root.innerHTML = `
-    <div class="navbar-inner">
-      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle menu">☰</button>
-      <div class="navbar-title">
-        <span>لوحة إدارة ملاذ</span>
-      </div>
-      <div class="navbar-actions">
-        <button class="quick-action download-button" id="download-backup-pdf">PDF</button>
-        <button class="quick-action download-button" id="download-backup-xlsx">Excel</button>
-        <button class="quick-action" id="logout-button">خروج</button>
+    <div class="sticky top-0 z-40 bg-slate-800/95 backdrop-blur-sm border-b border-slate-700">
+      <div class="flex items-center justify-between h-16 px-4 sm:px-6">
+        <!-- Mobile menu button -->
+        <button class="sidebar-toggle lg:hidden p-2 rounded-lg text-slate-400 hover:text-slate-50 hover:bg-slate-700 transition-colors duration-200" id="sidebar-toggle" aria-label="Toggle menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+
+        <!-- Page title -->
+        <div class="flex-1 lg:flex-none">
+          <h1 class="text-lg font-semibold text-slate-50 truncate">${pageTitle}</h1>
+        </div>
+
+        <!-- Desktop actions -->
+        <div class="hidden lg:flex items-center gap-3">
+          <button class="btn-ghost px-3 py-2 text-sm" id="download-backup-xlsx" title="تحميل Excel">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Excel
+          </button>
+          <div class="w-px h-6 bg-slate-600"></div>
+          <button class="btn-ghost px-3 py-2 text-sm text-red-400 hover:text-red-300" id="logout-button">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+            خروج
+          </button>
+        </div>
+
+        <!-- Mobile actions menu -->
+        <div class="lg:hidden relative">
+          <button class="p-2 rounded-lg text-slate-400 hover:text-slate-50 hover:bg-slate-700 transition-colors duration-200" id="mobile-menu-button" aria-label="More actions">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+            </svg>
+          </button>
+
+          <!-- Mobile dropdown menu -->
+          <div class="hidden absolute right-0 top-full mt-2 w-48 bg-slate-800 rounded-lg border border-slate-700 shadow-lg py-1 z-50" id="mobile-menu">
+              <button class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-slate-50 flex items-center gap-2" id="mobile-download-xlsx">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              تحميل Excel
+            </button>
+            <div class="border-t border-slate-700 my-1"></div>
+            <button class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2" id="mobile-logout">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              تسجيل الخروج
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   `;
 
+  // Event listeners
   document.getElementById('logout-button')?.addEventListener('click', () => {
     auth.logout();
   });
-  document.getElementById('download-backup-pdf')?.addEventListener('click', downloadPdfBackup);
+  document.getElementById('mobile-logout')?.addEventListener('click', () => {
+    auth.logout();
+  });
+
   document.getElementById('download-backup-xlsx')?.addEventListener('click', downloadExcelBackup);
+  document.getElementById('mobile-download-xlsx')?.addEventListener('click', downloadExcelBackup);
+
+  // Mobile menu toggle
+  const mobileMenuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  mobileMenuButton?.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+  });
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!mobileMenuButton?.contains(e.target) && !mobileMenu?.contains(e.target)) {
+      mobileMenu?.classList.add('hidden');
+    }
+  });
 }
 
 function getCurrentPage() {

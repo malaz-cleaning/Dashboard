@@ -3,7 +3,6 @@ import { renderOrders } from './pages/orders.js';
 import { renderClients } from './pages/clients.js';
 import { renderChalets } from './pages/chalets.js';
 import { renderAnalytics } from './pages/analytics.js';
-import { renderSettings } from './pages/settings.js';
 
 const routes = {
   '': renderDashboard,
@@ -12,7 +11,6 @@ const routes = {
   '#clients': renderClients,
   '#chalets': renderChalets,
   '#analytics': renderAnalytics,
-  '#settings': renderSettings,
 };
 
 export function initRouter() {

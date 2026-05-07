@@ -39,23 +39,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Sidebar toggle functionality
   const sidebarToggle = document.getElementById('sidebar-toggle');
-  const appShell = document.getElementById('app');
+  const sidebar = document.getElementById('sidebar');
 
-  if (sidebarToggle && appShell) {
+  if (sidebarToggle && sidebar) {
     const toggleSidebar = () => {
-      appShell.classList.toggle('sidebar-open');
+      const isMobile = window.innerWidth < 1024; // lg breakpoint
+
+      if (isMobile) {
+        // Mobile: toggle transform classes
+        sidebar.classList.toggle('-translate-x-full');
+      } else {
+        // Desktop: toggle width classes
+        const sidebarInner = sidebar.querySelector('.flex');
+        if (sidebarInner) {
+          sidebarInner.classList.toggle('w-16'); // collapsed
+          sidebarInner.classList.toggle('w-64'); // expanded
+
+          // Hide/show text in nav links
+          const linkTexts = sidebarInner.querySelectorAll('.sidebar-link-text');
+          linkTexts.forEach(text => {
+            text.classList.toggle('hidden');
+          });
+        }
+      }
     };
 
     sidebarToggle.addEventListener('click', toggleSidebar);
-    sidebarToggle.addEventListener('touchstart', (event) => {
-      event.preventDefault();
-      toggleSidebar();
-    });
 
     // Close sidebar when clicking outside on mobile
     document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 1000 && !sidebarRoot.contains(e.target) && !sidebarToggle.contains(e.target)) {
-        appShell.classList.remove('sidebar-open');
+      const isMobile = window.innerWidth < 1024;
+      if (isMobile && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+        sidebar.classList.add('-translate-x-full');
       }
     });
   }
@@ -85,10 +100,14 @@ function getCurrentPage() {
 
 function updateActiveLink() {
   const currentPage = getCurrentPage();
-  document.querySelectorAll('.nav-link').forEach((link) => {
+  document.querySelectorAll('.sidebar-link').forEach((link) => {
     const href = link.getAttribute('href');
+    if (!href) {
+      link.classList.remove('sidebar-link-active');
+      return;
+    }
     const linkPage = href.substring(href.lastIndexOf('/') + 1);
-    link.classList.toggle('active', linkPage === currentPage);
+    link.classList.toggle('sidebar-link-active', linkPage === currentPage);
   });
 }
 

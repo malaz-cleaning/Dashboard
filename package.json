@@ -8,13 +8,27 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist",
+    "backup:api": "node backup-api.js",
+    "backup:scheduler": "node backup-server.js",
+    "backup:all": "concurrently \"npm run dev\" \"npm run backup:api\" \"npm run backup:scheduler\""
   },
   "dependencies": {
-    "firebase": "^10.0.0"
+    "cors": "^2.8.6",
+    "express": "^4.18.0",
+    "firebase": "^10.0.0",
+    "firebase-admin": "^12.0.0",
+    "google-auth-library": "^10.6.2",
+    "googleapis": "^171.4.0",
+    "node-cron": "^4.2.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "vite": "^5.0.0",
-    "gh-pages": "^6.1.0"
+    "autoprefixer": "^10.5.0",
+    "concurrently": "^9.2.1",
+    "gh-pages": "^6.1.0",
+    "postcss": "^8.5.14",
+    "tailwindcss": "^3.4.19",
+    "vite": "^5.0.0"
   }
 }

@@ -18,7 +18,6 @@ export default defineConfig({
         chalets: resolve(__dirname, 'chalets.html'),
         clients: resolve(__dirname, 'clients.html'),
         orders: resolve(__dirname, 'orders.html'),
-        settings: resolve(__dirname, 'settings.html'),
       },
     },
   },

@@ -4,29 +4,27 @@ import { showToast } from '../components/toast.js';
 
 const pageRoot = document.getElementById('page-content');
 
-function openClientModal() {
+function openClientModal(onClientAdded) {
   const content = `
-    <div class="form-row">
-      <label>
-        الاسم
-        <input id="client-name" type="text" class="input-field" placeholder="اسم العميل" />
-      </label>
-      <label>
-        الهاتف
-        <input id="client-phone" type="tel" class="input-field" placeholder="رقم الهاتف" />
-      </label>
-    </div>
-    <div class="form-row">
-      <label>
-        النوع
-        <select id="client-type" class="select-field">
-          <option value="owner">Owner</option>
-          <option value="broker">Broker</option>
+    <div class="space-y-4">
+      <div>
+        <label class="form-label" for="client-name">الاسم</label>
+        <input id="client-name" type="text" class="form-input" placeholder="اسم العميل" />
+      </div>
+      <div>
+        <label class="form-label" for="client-phone">الهاتف</label>
+        <input id="client-phone" type="tel" class="form-input" placeholder="رقم الهاتف" />
+      </div>
+      <div>
+        <label class="form-label" for="client-type">النوع</label>
+        <select id="client-type" class="form-select">
+          <option value="owner">مالك مباشر</option>
+          <option value="broker">سمسار</option>
         </select>
-      </label>
-    </div>
-    <div class="form-actions">
-      <button class="button-primary" id="save-client-button">حفظ العميل</button>
+      </div>
+      <div class="flex justify-end">
+        <button class="btn btn-primary" id="save-client-button">حفظ العميل</button>
+      </div>
     </div>
   `;
 
@@ -36,89 +34,153 @@ function openClientModal() {
     const name = document.getElementById('client-name')?.value.trim();
     const phone = document.getElementById('client-phone')?.value.trim();
     const type = document.getElementById('client-type')?.value;
+
     if (!name || !phone) {
-      window.alert('الرجاء تعبئة الاسم والهاتف.');
+      showToast('error', 'الرجاء تعبئة الاسم والهاتف');
       return;
     }
+
     await api.addClient({ name, phone, type });
-    renderClients();
     document.getElementById('modal-root').innerHTML = '';
+    showToast('success', 'تم إضافة العميل بنجاح');
+    if (onClientAdded) onClientAdded();
   });
 }
 
-export async function renderClients() {
-  if (!pageRoot) return;
-  const [clients, orders, chalets] = await Promise.all([api.getClients(), api.getOrders(), api.getChalets()]);
+function renderClientRows(filtered, orders, chalets) {
+  if (!filtered.length) {
+    return `
+      <tr class="hidden md:table-row">
+        <td colspan="8" class="px-6 py-12 text-center text-slate-400">لا يوجد عملاء مطابقين.</td>
+      </tr>
+      <div class="md:hidden p-8 text-center text-slate-400">لا يوجد عملاء مطابقين.</div>
+    `;
+  }
 
-  const rows = clients
+  const rows = filtered
     .map((client) => {
       const clientOrders = orders.filter((order) => order.client_id === client.client_id);
       const clientChalets = chalets.filter((item) => item.client_id === client.client_id);
       return `
-        <tr>
-          <td>${client.client_id}</td>
-          <td>${client.name}</td>
-          <td>${client.phone}</td>
-          <td>${client.type}</td>
-          <td>${clientChalets.length}</td>
-          <td>${clientOrders.length}</td>
-          <td>${client.created_at}</td>
-          <td>
-            <button class="button-secondary" data-action="delete" data-id="${client.client_id}">حذف</button>
+        <tr class="hidden md:table-row hover:bg-slate-700/40">
+          <td class="px-6 py-4 text-slate-200">${client.client_id}</td>
+          <td class="px-6 py-4 text-slate-200">${client.name}</td>
+          <td class="px-6 py-4 text-slate-200">${client.phone}</td>
+          <td class="px-6 py-4 text-slate-200">${client.type}</td>
+          <td class="px-6 py-4 text-slate-200">${clientChalets.length}</td>
+          <td class="px-6 py-4 text-slate-200">${clientOrders.length}</td>
+          <td class="px-6 py-4 text-slate-200">${client.created_at}</td>
+          <td class="px-6 py-4">
+            <button class="btn btn-secondary w-full" data-action="delete" data-id="${client.client_id}">حذف</button>
           </td>
         </tr>
       `;
     })
     .join('');
 
+  const cards = filtered
+    .map((client) => {
+      const clientOrders = orders.filter((order) => order.client_id === client.client_id);
+      const clientChalets = chalets.filter((item) => item.client_id === client.client_id);
+      return `
+        <div class="md:hidden bg-slate-800 border border-slate-700 rounded-3xl p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-4 gap-4">
+            <div>
+              <p class="text-xs text-slate-400">رقم العميل</p>
+              <p class="font-semibold text-slate-50">${client.client_id}</p>
+            </div>
+            <button class="btn btn-secondary" data-action="delete" data-id="${client.client_id}">حذف</button>
+          </div>
+          <div class="space-y-3 text-sm text-slate-300">
+            <div class="flex justify-between">
+              <span>الاسم</span>
+              <span class="text-slate-100">${client.name}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>الهاتف</span>
+              <span class="text-slate-100">${client.phone}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>النوع</span>
+              <span class="text-slate-100">${client.type}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 pt-3 text-xs text-slate-400">
+              <div class="rounded-2xl bg-slate-900/70 p-3">
+                <p>الشاليهات</p>
+                <p class="font-semibold text-slate-100">${clientChalets.length}</p>
+              </div>
+              <div class="rounded-2xl bg-slate-900/70 p-3">
+                <p>الطلبات</p>
+                <p class="font-semibold text-slate-100">${clientOrders.length}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+
+  return rows + cards;
+}
+
+export async function renderClients() {
+  if (!pageRoot) return;
+  const [clients, orders, chalets] = await Promise.all([api.getClients(), api.getOrders(), api.getChalets()]);
+
   pageRoot.innerHTML = `
-    <section class="dashboard-panel">
-      <div class="title-group">
+    <div class="p-6 max-w-7xl mx-auto">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div>
-          <h1 class="page-title">Clients</h1>
-          <p>إدارة العملاء وأنواعهم.</p>
+          <h1 class="text-3xl font-bold text-slate-50">العملاء</h1>
+          <p class="text-slate-400 mt-2">إدارة العملاء وأنواعهم بكل وضوح.</p>
         </div>
-        <button class="button-primary" id="open-client-modal">إضافة عميل جديد</button>
+        <button class="btn btn-primary px-6 py-3" id="open-client-modal">إضافة عميل جديد</button>
       </div>
-      <div class="card">
-        <div class="form-row columns-2">
-          <label>
-            بحث
-            <input id="client-search" type="search" class="input-field" placeholder="ابحث باسم العميل أو رقم الهاتف" />
-          </label>
-          <label>
-            النوع
-            <select id="client-type-filter" class="select-field">
+
+      <div class="bg-slate-800 rounded-3xl border border-slate-700 p-6 shadow-sm mb-6">
+        <div class="grid gap-4 lg:grid-cols-2">
+          <div>
+            <label class="form-label" for="client-search">بحث</label>
+            <input id="client-search" type="search" class="form-input" placeholder="ابحث باسم العميل أو رقم الهاتف" />
+          </div>
+          <div>
+            <label class="form-label" for="client-type-filter">النوع</label>
+            <select id="client-type-filter" class="form-select">
               <option value="">كل الأنواع</option>
-              <option value="owner">Owner</option>
-              <option value="broker">Broker</option>
+              <option value="owner">مالك مباشر</option>
+              <option value="broker">سمسار</option>
             </select>
-          </label>
+          </div>
         </div>
       </div>
-      <div class="card table-wrapper">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>رقم العميل</th>
-              <th>الاسم</th>
-              <th>الهاتف</th>
-              <th>النوع</th>
-              <th>عدد الشاليهات</th>
-              <th>عدد الطلبات</th>
-              <th>تاريخ الإضافة</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody id="clients-table-body">${rows}</tbody>
-        </table>
+
+      <div class="bg-slate-800 rounded-3xl border border-slate-700 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="hidden md:table min-w-full text-sm text-left">
+            <thead class="bg-slate-900 border-b border-slate-700">
+              <tr>
+                <th class="px-6 py-3 text-slate-400">رقم العميل</th>
+                <th class="px-6 py-3 text-slate-400">الاسم</th>
+                <th class="px-6 py-3 text-slate-400">الهاتف</th>
+                <th class="px-6 py-3 text-slate-400">النوع</th>
+                <th class="px-6 py-3 text-slate-400">الشاليهات</th>
+                <th class="px-6 py-3 text-slate-400">الطلبات</th>
+                <th class="px-6 py-3 text-slate-400">تاريخ الإضافة</th>
+                <th class="px-6 py-3 text-slate-400">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="clients-table-body" class="bg-slate-800"></tbody>
+          </table>
+          <div id="clients-mobile-body" class="md:hidden p-4 space-y-4"></div>
+        </div>
       </div>
-    </section>
+    </div>
   `;
 
   const searchInput = pageRoot.querySelector('#client-search');
   const typeSelect = pageRoot.querySelector('#client-type-filter');
   const tableBody = pageRoot.querySelector('#clients-table-body');
+  const mobileBody = pageRoot.querySelector('#clients-mobile-body');
 
   function updateTable() {
     const search = searchInput.value.trim().toLowerCase();
@@ -130,39 +192,28 @@ export async function renderClients() {
       return matchesSearch && matchesType;
     });
 
-    tableBody.innerHTML = filtered
-      .map((client) => {
-        const clientOrders = orders.filter((order) => order.client_id === client.client_id);
-        const clientChalets = chalets.filter((item) => item.client_id === client.client_id);
-        return `
-          <tr>
-            <td>${client.client_id}</td>
-            <td>${client.name}</td>
-            <td>${client.phone}</td>
-            <td>${client.type}</td>
-            <td>${clientChalets.length}</td>
-            <td>${clientOrders.length}</td>
-            <td>${client.created_at}</td>
-            <td>
-              <button class="button-secondary" data-action="delete" data-id="${client.client_id}">حذف</button>
-            </td>
-          </tr>
-        `;
-      })
-      .join('');
+    const content = renderClientRows(filtered, orders, chalets);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+
+    tableBody.innerHTML = Array.from(tempDiv.querySelectorAll('tr')).map((row) => row.outerHTML).join('');
+    mobileBody.innerHTML = Array.from(tempDiv.querySelectorAll('div[class*="md:hidden"]')).map((card) => card.outerHTML).join('');
   }
 
-  document.getElementById('open-client-modal')?.addEventListener('click', openClientModal);
-  pageRoot.querySelector('#clients-table-body')?.addEventListener('click', async (event) => {
-    const button = event.target.closest('button[data-action]');
+  document.getElementById('open-client-modal')?.addEventListener('click', () => openClientModal(renderClients));
+  pageRoot.addEventListener('click', async (event) => {
+    const button = event.target.closest('button[data-action="delete"]');
     if (!button) return;
     const clientId = button.dataset.id;
     await api.deleteClient(clientId);
     showToast('success', 'تم حذف العميل بنجاح');
     renderClients();
   });
+
   searchInput?.addEventListener('input', updateTable);
   typeSelect?.addEventListener('change', updateTable);
+
+  updateTable();
 }
 
 renderClients();

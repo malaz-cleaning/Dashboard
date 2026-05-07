@@ -92,7 +92,6 @@ malaz-cleaning-dashboard/
 ├── clients.html
 ├── chalets.html
 ├── analytics.html
-├── settings.html
 ├── manifest.json          # PWA manifest
 ├── sw.js                 # Service Worker
 └── offline.html          # صفحة offline
