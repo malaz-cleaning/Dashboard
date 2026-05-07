@@ -1,0 +1,37 @@
+import { auth } from '../auth.js';
+
+export function renderNavbar(root) {
+  if (!root) return;
+  root.innerHTML = `
+    <div class="navbar-inner">
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle menu">☰</button>
+      <div class="navbar-title">
+        <span>لوحة إدارة مالاز</span>
+      </div>
+      <div class="navbar-actions">
+        <button class="quick-action" id="mobile-add-order-button">+ طلب</button>
+        <button class="quick-action" id="logout-button">خروج</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('logout-button')?.addEventListener('click', () => {
+    auth.logout();
+  });
+
+  document.getElementById('mobile-add-order-button')?.addEventListener('click', () => {
+    const currentPage = getCurrentPage();
+    if (currentPage !== 'index.html') {
+      window.location.href = 'index.html';
+      return;
+    }
+
+    document.getElementById('add-order-button')?.click();
+  });
+}
+
+function getCurrentPage() {
+  const path = window.location.pathname;
+  const page = path.substring(path.lastIndexOf('/') + 1);
+  return page === '' ? 'index.html' : page;
+}
