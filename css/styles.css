@@ -42,12 +42,17 @@ body {
   min-height: 100vh;
   background: radial-gradient(circle at top, rgba(102, 126, 234, 0.16), transparent 40%),
     linear-gradient(180deg, #030712 0%, #0f172a 100%);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 button,
 select,
 input,
 textarea {
   font: inherit;
+  touch-action: manipulation; /* Prevent double-tap zoom on buttons */
 }
 .app-shell {
   display: grid;
@@ -74,6 +79,9 @@ textarea {
   border-bottom: 1px solid rgba(148, 163, 184, 0.08);
   backdrop-filter: blur(16px);
   background: rgba(15, 23, 42, 0.86);
+  padding-top: calc(14px + env(safe-area-inset-top));
+  padding-left: calc(20px + env(safe-area-inset-left));
+  padding-right: calc(20px + env(safe-area-inset-right));
 }
 .navbar-inner {
   display: flex;
@@ -309,6 +317,22 @@ textarea {
     border-radius: 12px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  }
+  .table-wrapper::-webkit-scrollbar {
+    height: 6px;
+  }
+  .table-wrapper::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.1);
+    border-radius: 3px;
+  }
+  .table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 3px;
+  }
+  .table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
   }
   .table {
     min-width: 600px;
@@ -364,16 +388,39 @@ textarea {
   }
   .form-actions button {
     width: 100%;
+    min-height: 48px;
+    font-size: 1rem;
   }
   .modal-card {
     width: 98vw;
     padding: 16px;
+    margin: 8px;
   }
   .modal-header {
     margin-bottom: 16px;
   }
   .modal-title {
     font-size: 1.2rem;
+  }
+  .input-field,
+  .select-field,
+  .textarea-field {
+    font-size: 16px; /* Prevent zoom on iOS */
+    min-height: 48px;
+  }
+  .button-primary,
+  .button-secondary {
+    min-height: 48px;
+    font-size: 1rem;
+    padding: 12px 16px;
+  }
+  .quick-action {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+  .sidebar-toggle {
+    min-width: 48px;
+    min-height: 48px;
   }
 }
 
@@ -397,7 +444,46 @@ textarea {
   .nav-link {
     padding: 10px 12px;
     font-size: 0.9rem;
+    min-height: 44px;
   }
+  .page-content {
+    padding: 8px;
+  }
+  .card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .title-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .page-title {
+    font-size: 1.2rem;
+  }
+  .form-row {
+    margin-bottom: 12px;
+  }
+  .form-row label {
+    font-size: 0.9rem;
+  }
+  .table {
+    font-size: 0.8rem;
+  }
+  .table th,
+  .table td {
+    padding: 8px 4px;
+  }
+  .badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+  .status-select {
+    font-size: 0.8rem !important;
+    padding: 6px 8px !important;
+    min-height: 32px;
+  }
+}
   .page-title {
     font-size: 1.1rem;
   }
