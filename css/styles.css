@@ -484,16 +484,15 @@ textarea {
     min-height: 32px;
   }
 }
-  .page-title {
-    font-size: 1.1rem;
-  }
-  .table {
-    min-width: 500px;
-  }
-  .badge {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
+.page-title {
+  font-size: 1.1rem;
+}
+.table {
+  min-width: 500px;
+}
+.badge {
+  padding: 6px 10px;
+  font-size: 0.8rem;
 }
 .brand-block {
   display: flex;
