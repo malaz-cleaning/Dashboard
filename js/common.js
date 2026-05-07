@@ -42,8 +42,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const appShell = document.getElementById('app');
 
   if (sidebarToggle && appShell) {
-    sidebarToggle.addEventListener('click', () => {
+    const toggleSidebar = () => {
       appShell.classList.toggle('sidebar-open');
+    };
+
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    sidebarToggle.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      toggleSidebar();
     });
 
     // Close sidebar when clicking outside on mobile
@@ -87,19 +93,3 @@ function updateActiveLink() {
 }
 
 updateActiveLink();
-
-const sidebarToggle = document.getElementById('sidebar-toggle');
-sidebarToggle?.addEventListener('click', () => {
-  document.querySelector('.app-shell')?.classList.toggle('sidebar-open');
-});
-
-const mobileAddOrderButton = document.getElementById('mobile-add-order-button');
-mobileAddOrderButton?.addEventListener('click', () => {
-  const currentPage = getCurrentPage();
-  if (currentPage !== 'index.html') {
-    window.location.href = 'index.html';
-    return;
-  }
-
-  document.getElementById('add-order-button')?.click();
-});
