@@ -3,6 +3,7 @@ import { showToast } from '../components/toast.js';
 import { renderModal } from '../components/modal.js';
 
 const pageRoot = document.getElementById('page-content');
+const modalRoot = document.getElementById('modal-root');
 
 function getStatusLabel(status) {
   const map = {
@@ -21,7 +22,7 @@ function statusBadge(status) {
 
 function renderOrderRows(orders, clients, chalets) {
   if (!orders.length) {
-    return `<tr><td colspan="8" class="empty-state">لا يوجد طلبات مطابقة.</td></tr>`;
+    return `<tr><td colspan="9" class="empty-state">لا يوجد طلبات مطابقة.</td></tr>`;
   }
 
   return orders
@@ -39,7 +40,13 @@ function renderOrderRows(orders, clients, chalets) {
           <td>${order.created_at}</td>
           <td>${order.completed_at || '-'}</td>
           <td>
-            <button class="button-secondary" data-action="delete" data-id="${order.order_id}">حذف</button>
+            <select class="select-field status-select" data-order-id="${order.order_id}" data-current-status="${order.status}" style="font-size: 0.9rem; padding: 8px;">
+              <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>معلقة</option>
+              <option value="in_progress" ${order.status === 'in_progress' ? 'selected' : ''}>قيد التنفيذ</option>
+              <option value="done_unpaid" ${order.status === 'done_unpaid' ? 'selected' : ''}>تمت ولم يُدفع</option>
+              <option value="done_paid" ${order.status === 'done_paid' ? 'selected' : ''}>تمت ودُفع</option>
+              <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ملغاة</option>
+            </select>
           </td>
         </tr>
       `;
@@ -58,27 +65,43 @@ function filterOrders(orders, clients, filters) {
   });
 }
 
-function openOrderModal(clients, chalets, refresh) {
+async function openOrderModal(clients, chalets, refresh) {
+  let currentClients = clients;
+  let currentChalets = chalets;
+
+  const selectedClientId = clients[0]?.client_id || '';
+  const chaletOptions = chalets
+    .filter((chalet) => chalet.client_id === selectedClientId)
+    .map((chalet) => `<option value="${chalet.chalet_id}">${chalet.chalet_name}</option>`)
+    .join('');
+
   const content = `
     <div class="form-row">
       <label>
         العميل
-        <select id="order-client-select" class="select-field">
-          <option value="">اختر عميل</option>
-          ${clients.map((client) => `<option value="${client.client_id}">${client.name}</option>`).join('')}
-        </select>
-      </label>
-      <label>
-        الشاليه
-        <select id="order-chalet-select" class="select-field">
-          <option value="">اختر شاليه</option>
-        </select>
+        <div style="display: flex; gap: 10px; align-items: flex-end;">
+          <select id="order-client" class="select-field" style="flex: 1;">
+            ${currentClients.map((client) => `<option value="${client.client_id}">${client.name}</option>`).join('')}
+          </select>
+          <button class="button-secondary" id="add-client-btn" style="padding: 14px 16px; min-height: 44px;">+ عميل</button>
+        </div>
       </label>
     </div>
     <div class="form-row">
       <label>
+        الشاليه
+        <div style="display: flex; gap: 10px; align-items: flex-end;">
+          <select id="order-chalet" class="select-field" style="flex: 1;">
+            ${chaletOptions}
+          </select>
+          <button class="button-secondary" id="add-chalet-btn" style="padding: 14px 16px; min-height: 44px;">+ شاليه</button>
+        </div>
+      </label>
+    </div>
+    <div class="form-row columns-2">
+      <label>
         الحالة
-        <select id="order-status-select" class="select-field">
+        <select id="order-status" class="select-field">
           <option value="pending">معلقة</option>
           <option value="in_progress">قيد التنفيذ</option>
           <option value="done_unpaid">تمت ولم يُدفع</option>
@@ -88,13 +111,13 @@ function openOrderModal(clients, chalets, refresh) {
       </label>
       <label>
         السعر
-        <input id="order-price" type="number" class="input-field" placeholder="السعر" />
+        <input id="order-price" type="number" class="input-field" placeholder="مثلاً 420" />
       </label>
     </div>
     <div class="form-row">
       <label>
-        ملاحظات
-        <textarea id="order-notes" rows="3" class="textarea-field" placeholder="ملاحظات إضافية"></textarea>
+        الملاحظات
+        <textarea id="order-notes" rows="3" class="textarea-field" placeholder="تفاصيل إضافية"></textarea>
       </label>
     </div>
     <div class="form-actions">
@@ -102,38 +125,143 @@ function openOrderModal(clients, chalets, refresh) {
     </div>
   `;
 
-  renderModal(document.getElementById('modal-root'), 'إضافة طلب جديد', content);
-  
-  const clientSelect = document.getElementById('order-client-select');
-  const chaletSelect = document.getElementById('order-chalet-select');
-  const saveButton = document.getElementById('save-order-button');
+  renderModal(modalRoot, 'إضافة طلب جديد', content);
 
-  clientSelect?.addEventListener('change', (e) => {
-    const clientId = e.target.value;
-    const clientChalets = clientId ? chalets.filter((c) => c.client_id === clientId) : [];
-    chaletSelect.innerHTML = `
-      <option value="">اختر شاليه</option>
-      ${clientChalets.map((c) => `<option value="${c.chalet_id}">${c.chalet_name}</option>`).join('')}
+  const clientSelect = modalRoot.querySelector('#order-client');
+  const chaletSelect = modalRoot.querySelector('#order-chalet');
+  const addClientBtn = modalRoot.querySelector('#add-client-btn');
+  const addChaletBtn = modalRoot.querySelector('#add-chalet-btn');
+  const saveButton = modalRoot.querySelector('#save-order-button');
+
+  function refreshChalets() {
+    const currentClientId = clientSelect.value;
+    const filtered = currentChalets.filter((item) => item.client_id === currentClientId);
+    chaletSelect.innerHTML = filtered.length
+      ? filtered.map((item) => `<option value="${item.chalet_id}">${item.chalet_name}</option>`).join('')
+      : '<option value="">لا يوجد شاليهات</option>';
+  }
+
+  clientSelect?.addEventListener('change', refreshChalets);
+
+  // Add new client modal
+  addClientBtn?.addEventListener('click', () => {
+    const clientModalContent = `
+      <div class="form-row">
+        <label>
+          الاسم
+          <input id="new-client-name" type="text" class="input-field" placeholder="اسم العميل" />
+        </label>
+        <label>
+          الهاتف
+          <input id="new-client-phone" type="tel" class="input-field" placeholder="رقم الهاتف" />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          النوع
+          <select id="new-client-type" class="select-field">
+            <option value="owner">Owner</option>
+            <option value="broker">Broker</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="button-primary" id="save-new-client-button">حفظ العميل</button>
+      </div>
     `;
+    
+    renderModal(modalRoot, 'إضافة عميل جديد', clientModalContent);
+    
+    const saveNewClientButton = modalRoot.querySelector('#save-new-client-button');
+    saveNewClientButton?.addEventListener('click', async () => {
+      const name = modalRoot.querySelector('#new-client-name')?.value.trim();
+      const phone = modalRoot.querySelector('#new-client-phone')?.value.trim();
+      const type = modalRoot.querySelector('#new-client-type')?.value;
+
+      if (!name || !phone) {
+        showToast('error', 'الرجاء تعبئة الاسم والهاتف');
+        return;
+      }
+
+      const newClient = await api.addClient({ name, phone, type });
+      currentClients.push(newClient);
+      showToast('success', 'تم إضافة العميل بنجاح');
+      
+      // Re-render the order modal
+      await openOrderModal(currentClients, currentChalets, refresh);
+    });
+  });
+
+  // Add new chalet modal
+  addChaletBtn?.addEventListener('click', () => {
+    const chaletModalContent = `
+      <div class="form-row">
+        <label>
+          الشاليه
+          <input id="new-chalet-name" type="text" class="input-field" placeholder="اسم الشاليه" />
+        </label>
+        <label>
+          الموقع
+          <input id="new-chalet-location" type="text" class="input-field" placeholder="الموقع" />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          العميل
+          <select id="new-chalet-client" class="select-field">
+            ${currentClients.map((client) => `<option value="${client.client_id}">${client.name}</option>`).join('')}
+          </select>
+        </label>
+        <label>
+          التفاصيل
+          <textarea id="new-chalet-details" rows="3" class="textarea-field" placeholder="تفاصيل الشاليه"></textarea>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="button-primary" id="save-new-chalet-button">حفظ الشاليه</button>
+      </div>
+    `;
+    
+    renderModal(modalRoot, 'إضافة شاليه جديد', chaletModalContent);
+    
+    const saveNewChaletButton = modalRoot.querySelector('#save-new-chalet-button');
+    saveNewChaletButton?.addEventListener('click', async () => {
+      const name = modalRoot.querySelector('#new-chalet-name')?.value.trim();
+      const location = modalRoot.querySelector('#new-chalet-location')?.value.trim();
+      const details = modalRoot.querySelector('#new-chalet-details')?.value.trim();
+      const clientId = modalRoot.querySelector('#new-chalet-client')?.value;
+
+      if (!name || !location || !clientId) {
+        showToast('error', 'الرجاء تعبئة جميع الحقول');
+        return;
+      }
+
+      const newChalet = await api.addChalet({ client_id: clientId, chalet_name: name, location, details });
+      currentChalets.push(newChalet);
+      showToast('success', 'تم إضافة الشاليه بنجاح');
+      
+      // Re-render the order modal
+      await openOrderModal(currentClients, currentChalets, refresh);
+    });
   });
 
   saveButton?.addEventListener('click', async () => {
-    const client_id = clientSelect?.value.trim();
-    const chalet_id = chaletSelect?.value.trim();
-    const status = document.getElementById('order-status-select')?.value;
-    const price = document.getElementById('order-price')?.value.trim();
-    const notes = document.getElementById('order-notes')?.value.trim();
+    const clientId = clientSelect?.value;
+    const chaletId = chaletSelect?.value;
+    const status = modalRoot.querySelector('#order-status')?.value;
+    const price = modalRoot.querySelector('#order-price')?.value.trim();
+    const notes = modalRoot.querySelector('#order-notes')?.value.trim();
     const created_at = new Date().toISOString().split('T')[0];
 
-    if (!client_id || !chalet_id || !price) {
-      window.alert('الرجاء تعبئة جميع الحقول الإلزامية.');
+    if (!clientId || !chaletId || !price) {
+      showToast('error', 'الرجاء تعبئة العميل والشاليه والسعر');
       return;
     }
 
-    await api.addOrder({ client_id, chalet_id, status, price: Number(price), notes, created_at });
+    await api.addOrder({ client_id: clientId, chalet_id: chaletId, status, price: Number(price), notes, created_at });
     showToast('success', 'تم إضافة الطلب بنجاح');
+    modalRoot.innerHTML = '';
     refresh();
-    document.getElementById('modal-root').innerHTML = '';
   });
 }
 
@@ -148,6 +276,7 @@ export async function renderOrders() {
           <h1 class="page-title">Orders</h1>
           <p>عرض وإدارة جميع الطلبات.</p>
         </div>
+        <button class="button-primary" id="add-order-button">إضافة طلب جديد</button>
       </div>
       <div class="card">
         <div class="form-row columns-2">
@@ -167,7 +296,7 @@ export async function renderOrders() {
             </select>
           </label>
         </div>
-        <div class="form-row columns-2">
+        <div class="form-row">
           <label>
             عميل
             <select id="order-client-filter" class="select-field">
@@ -175,7 +304,6 @@ export async function renderOrders() {
               ${clients.map((client) => `<option value="${client.client_id}">${client.name}</option>`).join('')}
             </select>
           </label>
-          <button class="button-primary" id="goto-dashboard-order">إضافة طلب جديد</button>
         </div>
       </div>
       <div class="card table-wrapper">
@@ -190,11 +318,17 @@ export async function renderOrders() {
               <th>ملاحظات</th>
               <th>تاريخ الإنشاء</th>
               <th>تاريخ الإنجاز</th>
-              <th>إجراءات</th>
+              <th>تغيير الحالة</th>
             </tr>
           </thead>
           <tbody id="orders-table-body"></tbody>
         </table>
+      </div>
+      <div class="card" style="margin-top: 20px; padding: 16px; background: rgba(148, 163, 184, 0.08); border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; font-size: 1.1rem;">الإجمالي</h3>
+          <p style="margin: 0; font-size: 1.3rem; font-weight: 700; color: #10b981;">EGP <span id="total-amount">0</span></p>
+        </div>
       </div>
     </section>
   `;
@@ -203,7 +337,8 @@ export async function renderOrders() {
   const statusSelect = pageRoot.querySelector('#order-status-filter');
   const clientSelect = pageRoot.querySelector('#order-client-filter');
   const tableBody = pageRoot.querySelector('#orders-table-body');
-  const addOrderButton = pageRoot.querySelector('#goto-dashboard-order');
+  const addOrderButton = pageRoot.querySelector('#add-order-button');
+  const totalAmountSpan = pageRoot.querySelector('#total-amount');
 
   function updateTable() {
     const filters = {
@@ -213,22 +348,31 @@ export async function renderOrders() {
     };
     const filtered = filterOrders(orders, clients, filters);
     tableBody.innerHTML = renderOrderRows(filtered, clients, chalets);
+    
+    // Calculate total
+    const total = filtered.reduce((sum, order) => sum + Number(order.price || 0), 0);
+    totalAmountSpan.textContent = total.toLocaleString();
+
+    // Attach event listeners to status selects
+    pageRoot.querySelectorAll('.status-select').forEach((select) => {
+      select.addEventListener('change', async (e) => {
+        const orderId = e.target.dataset.orderId;
+        const newStatus = e.target.value;
+        
+        try {
+          await api.updateOrder(orderId, { status: newStatus });
+          showToast('success', 'تم تحديث حالة الطلب بنجاح');
+          renderOrders();
+        } catch (error) {
+          showToast('error', 'خطأ في تحديث الطلب');
+          e.target.value = e.target.dataset.currentStatus;
+        }
+      });
+    });
   }
 
   addOrderButton?.addEventListener('click', () => {
     openOrderModal(clients, chalets, renderOrders);
-  });
-
-  tableBody?.addEventListener('click', async (event) => {
-    const button = event.target.closest('button[data-action]');
-    if (!button) return;
-    const action = button.dataset.action;
-    const orderId = button.dataset.id;
-    if (action === 'delete') {
-      await api.deleteOrder(orderId);
-      showToast('success', 'تم حذف الطلب بنجاح');
-      renderOrders();
-    }
   });
 
   searchInput?.addEventListener('input', updateTable);

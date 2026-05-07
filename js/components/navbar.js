@@ -9,7 +9,6 @@ export function renderNavbar(root) {
         <span>لوحة إدارة ملاز</span>
       </div>
       <div class="navbar-actions">
-        <button class="quick-action" id="mobile-add-order-button">+ طلب</button>
         <button class="quick-action" id="logout-button">خروج</button>
       </div>
     </div>
@@ -17,16 +16,6 @@ export function renderNavbar(root) {
 
   document.getElementById('logout-button')?.addEventListener('click', () => {
     auth.logout();
-  });
-
-  document.getElementById('mobile-add-order-button')?.addEventListener('click', () => {
-    const currentPage = getCurrentPage();
-    if (currentPage !== 'index.html') {
-      window.location.href = 'index.html';
-      return;
-    }
-
-    document.getElementById('add-order-button')?.click();
   });
 }
 
