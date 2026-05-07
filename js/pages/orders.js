@@ -38,7 +38,7 @@ function renderOrderRows(orders, clients, chalets) {
           <td>EGP ${order.price}</td>
           <td>${order.notes || '-'}</td>
           <td>${order.created_at}</td>
-          <td>${order.completed_at || '-'}</td>
+          <td>${order.completed_at || ((['done_paid', 'done_unpaid', 'cancelled'].includes(order.status)) ? new Date().toISOString().split('T')[0] : '-')}</td>
           <td>
             <select class="select-field status-select" data-order-id="${order.order_id}" data-current-status="${order.status}" style="font-size: 0.9rem; padding: 8px;">
               <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>معلقة</option>
