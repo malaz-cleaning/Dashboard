@@ -1,4 +1,5 @@
 import { auth } from './auth.js';
+import { state } from './state.js';
 const FIREBASE_PROJECT_ID = 'malaz-cleaning';
 const FIREBASE_DATABASE_URL = `https://${FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`;
 
@@ -48,14 +49,21 @@ async function fetchResource(resource) {
   if (cache[resource]) {
     return cache[resource];
   }
-  const data = await firebaseRequest(`/${resource}`);
-  if (!data) {
-    cache[resource] = [];
-    return [];
+  try {
+    const data = await firebaseRequest(`/${resource}`);
+    if (!data) {
+      cache[resource] = [];
+      return [];
+    }
+    // Filter out deleted items (soft delete)
+    cache[resource] = Object.values(data).filter(item => !item.is_deleted);
+    return cache[resource];
+  } catch (error) {
+    console.warn(`Failed to fetch ${resource} from Firebase, using local state:`, error);
+    // Fallback to local state
+    cache[resource] = state[resource] || [];
+    return cache[resource];
   }
-  // Filter out deleted items (soft delete)
-  cache[resource] = Object.values(data).filter(item => !item.is_deleted);
-  return cache[resource];
 }
 
 function invalidateCache(...resources) {

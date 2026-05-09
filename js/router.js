@@ -3,6 +3,7 @@ import { renderOrders } from './pages/orders.js';
 import { renderClients } from './pages/clients.js';
 import { renderChalets } from './pages/chalets.js';
 import { renderAnalytics } from './pages/analytics.js';
+import { renderNavbar } from './components/navbar.js';
 
 const routes = {
   '': renderDashboard,
@@ -22,6 +23,13 @@ function renderRoute() {
   const routeKey = window.location.hash || '#dashboard';
   const renderFn = routes[routeKey] || renderDashboard;
   renderFn();
+
+  // Update navbar to reflect current page
+  const navbarRoot = document.getElementById('navbar');
+  if (navbarRoot) {
+    renderNavbar(navbarRoot);
+  }
+
   updateActiveLink(routeKey);
 }
 
