@@ -447,7 +447,7 @@ export async function renderDashboard() {
 
     pageRoot.innerHTML = '<div class="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">' +
       '<div>' +
-        '<h1 class="text-2xl sm:text-3xl font-bold text-slate-50">لوحة القيادة</h1>' +
+        '<h1 class="text-2xl sm:text-3xl font-bold text-slate-50">Dash board</h1>' +
         '<p class="text-slate-400 mt-2 text-sm sm:text-base">ملخص سريع لإدارة الطلبات والعملاء.</p>' +
       '</div>' +
       renderQuickActions() +

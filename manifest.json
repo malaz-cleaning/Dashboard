@@ -1,7 +1,7 @@
 {
   "name": "Malaz Cleaning Dashboard",
   "short_name": "Malaz Dashboard",
-  "description": "لوحة تحكم شركة ملاذ للتنظيف",
+  "description": "Dash board شركة ملاذ للتنظيف",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0f172a",

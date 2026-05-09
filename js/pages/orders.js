@@ -343,7 +343,7 @@ export async function renderOrders() {
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold text-slate-50">الطلبات</h1>
-          <p class="text-slate-400 mt-2">عرض وإدارة جميع الطلبات من لوحة التحكم.</p>
+          <p class="text-slate-400 mt-2">عرض وإدارة جميع الطلبات من Dash board.</p>
         </div>
         <button class="btn btn-primary px-6 py-3" id="add-order-button">إضافة طلب جديد</button>
       </div>

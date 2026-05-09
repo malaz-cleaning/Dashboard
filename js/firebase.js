@@ -22,6 +22,11 @@ export async function getFirebaseAuth() {
   return getAuth(app);
 }
 
+export async function getFirebaseAuthMethods() {
+  const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } = await import('firebase/auth');
+  return { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+}
+
 export async function getFirebaseDatabase() {
   const { getDatabase } = await import('firebase/database');
   return getDatabase(app);

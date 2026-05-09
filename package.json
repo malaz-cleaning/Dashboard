@@ -2,7 +2,7 @@
   "name": "malaz-cleaning-dashboard",
   "version": "1.0.0",
   "type": "module",
-  "description": "لوحة تحكم شركة ملاذ للتنظيف",
+  "description": "Dash board شركة ملاذ للتنظيف",
   "homepage": "https://malaz-cleaning.github.io/Dashboard/",
   "scripts": {
     "dev": "vite",

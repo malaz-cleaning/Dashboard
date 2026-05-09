@@ -1,6 +1,8 @@
 import { renderNavbar } from './components/navbar.js';
+import { renderSidebar } from './components/sidebar.js';
 import { auth, initAuthState } from './auth.js';
 
+const sidebarRoot = document.getElementById('sidebar');
 const navbarRoot = document.getElementById('navbar');
 
 // Loading state management
@@ -37,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+renderSidebar(sidebarRoot);
 renderNavbar(navbarRoot);
 
 // Register Service Worker for PWA
@@ -50,12 +53,6 @@ if ('serviceWorker' in navigator) {
         console.log('Service Worker registration failed:', error);
       });
   });
-}
-
-function getCurrentPage() {
-  const path = window.location.pathname;
-  const page = path.substring(path.lastIndexOf('/') + 1);
-  return page === '' ? 'index.html' : page;
 }
 
 

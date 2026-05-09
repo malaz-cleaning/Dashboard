@@ -6,8 +6,10 @@ export function renderSidebar(root) {
   // Check if we're on mobile
   const isMobile = window.innerWidth < 1024;
 
+  root.classList.add('sidebar');
+  root.classList.toggle('collapsed', isMobile);
+
   root.innerHTML = `
-    <div class="sidebar ${isMobile ? 'collapsed' : ''}" id="sidebar">
       <!-- Brand Block -->
       <div class="flex items-center gap-4 p-6 border-b border-slate-700/50">
         <div class="relative">
@@ -38,7 +40,7 @@ export function renderSidebar(root) {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"/>
             </svg>
           </div>
-          <span class="sidebar-link-text">لوحة التحكم</span>
+          <span class="sidebar-link-text">Dash board</span>
           ${window.location.pathname.includes('index') || window.location.pathname === '/' ? `
             <div class="w-2 h-2 bg-primary-400 rounded-full animate-pulse"></div>
           ` : ''}
@@ -91,19 +93,6 @@ export function renderSidebar(root) {
             <div class="w-2 h-2 bg-accent-emerald rounded-full animate-pulse"></div>
           ` : ''}
         </a>
-
-        <a class="sidebar-link ${window.location.pathname.includes('settings') ? 'sidebar-link-active' : ''}" href="settings.html">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500/20 to-slate-600/20 flex items-center justify-center">
-            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-          </div>
-          <span class="sidebar-link-text">الإعدادات</span>
-          ${window.location.pathname.includes('settings') ? `
-            <div class="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></div>
-          ` : ''}
-        </a>
       </nav>
 
       <!-- User Info & Logout -->
@@ -127,8 +116,6 @@ export function renderSidebar(root) {
           <span class="sidebar-link-text">تسجيل الخروج</span>
         </button>
       </div>
-    </div>
-
     ${isMobile ? `
       <div class="sidebar-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden opacity-0 pointer-events-none transition-opacity duration-300" id="sidebar-overlay"></div>
     ` : ''}
@@ -141,18 +128,23 @@ export function renderSidebar(root) {
 
   // Mobile sidebar functionality
   if (isMobile) {
-    const sidebar = root.querySelector('#sidebar');
+    const sidebar = root;
     const overlay = root.querySelector('#sidebar-overlay');
     const closeButton = root.querySelector('#sidebar-close');
+    const shell = document.querySelector('.app-shell');
 
     const toggleSidebar = (open) => {
       if (open) {
         sidebar?.classList.remove('collapsed');
+        sidebar?.classList.add('open');
+        shell?.classList.add('sidebar-open');
         overlay?.classList.remove('opacity-0', 'pointer-events-none');
         overlay?.classList.add('opacity-100', 'pointer-events-auto');
         document.body.style.overflow = 'hidden';
       } else {
         sidebar?.classList.add('collapsed');
+        sidebar?.classList.remove('open');
+        shell?.classList.remove('sidebar-open');
         overlay?.classList.remove('opacity-100', 'pointer-events-auto');
         overlay?.classList.add('opacity-0', 'pointer-events-none');
         document.body.style.overflow = '';

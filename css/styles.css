@@ -139,7 +139,9 @@ textarea {
   white-space: nowrap;
 }
 .nav-menu-toggle {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   background: rgba(148, 163, 184, 0.12);
   color: #e2e8f0;
@@ -150,6 +152,11 @@ textarea {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+}
+@media (min-width: 1024px) {
+  .nav-menu-toggle {
+    display: none;
+  }
 }
 .nav-menu-toggle::before {
   content: '';

@@ -1,10 +1,4 @@
-import { getFirebaseAuth } from './firebase.js';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-} from 'firebase/auth';
+import { getFirebaseAuth, getFirebaseAuthMethods } from './firebase.js';
 
 const ALLOWED_EMAILS = new Set([
   'admin@malaz.com',
@@ -25,6 +19,7 @@ async function getAuth() {
 async function firebaseSignUp(email, password) {
   try {
     const auth = await getAuth();
+    const { createUserWithEmailAndPassword } = await getFirebaseAuthMethods();
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     return {
       idToken: await userCredential.user.getIdToken(),
@@ -38,6 +33,7 @@ async function firebaseSignUp(email, password) {
 async function firebaseSignIn(email, password) {
   try {
     const auth = await getAuth();
+    const { signInWithEmailAndPassword } = await getFirebaseAuthMethods();
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return {
       idToken: await userCredential.user.getIdToken(),
@@ -50,6 +46,7 @@ async function firebaseSignIn(email, password) {
 
 export async function initAuthState() {
   const auth = await getAuth();
+  const { onAuthStateChanged } = await getFirebaseAuthMethods();
   return new Promise((resolve) => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -110,6 +107,7 @@ export const auth = {
   async logout() {
     localStorage.removeItem('authToken');
     try {
+      const { signOut } = await getFirebaseAuthMethods();
       const auth = await getAuth();
       await signOut(auth);
     } catch (error) {

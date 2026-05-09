@@ -8,7 +8,6 @@ module.exports = {
     "./chalets.html",
     "./analytics.html",
     "./offline.html",
-    "./settings.html",
     "./js/**/*.{js,jsx}",
   ],
   darkMode: 'media',
