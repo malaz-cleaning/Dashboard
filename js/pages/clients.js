@@ -1,6 +1,7 @@
 import { api } from '../api.js';
 import { renderModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { auth } from '../auth.js';
 
 const pageRoot = document.getElementById('page-content');
 
@@ -124,6 +125,10 @@ function renderClientRows(filtered, orders, chalets) {
 }
 
 export async function renderClients() {
+  if (!auth.isAuthenticated()) {
+    window.location.href = 'login.html';
+    return;
+  }
   if (!pageRoot) return;
   const [clients, orders, chalets] = await Promise.all([api.getClients(), api.getOrders(), api.getChalets()]);
 
@@ -216,4 +221,8 @@ export async function renderClients() {
   updateTable();
 }
 
-renderClients();
+document.addEventListener('DOMContentLoaded', () => {
+  renderClients().catch((error) => {
+    console.error('Failed to render clients page:', error);
+  });
+});

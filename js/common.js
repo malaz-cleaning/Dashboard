@@ -36,16 +36,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initAuthState();
   if (!auth.isAuthenticated() && !window.location.pathname.includes('login.html')) {
     window.location.href = 'login.html';
+    return;
   }
-});
 
-renderSidebar(sidebarRoot);
-renderNavbar(navbarRoot);
+  renderSidebar(sidebarRoot);
+  renderNavbar(navbarRoot);
+});
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    const swPath = import.meta.env.BASE_URL + 'sw.js';
+    navigator.serviceWorker.register(swPath)
       .then((registration) => {
         console.log('Service Worker registered:', registration);
       })

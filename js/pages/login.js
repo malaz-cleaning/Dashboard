@@ -52,8 +52,10 @@ form.addEventListener('submit', async (e) => {
 
 function showError(message) {
   errorMessage.textContent = message;
+  errorMessage.classList.remove('hidden');
   errorMessage.classList.add('show');
   setTimeout(() => {
     errorMessage.classList.remove('show');
+    errorMessage.classList.add('hidden');
   }, 5000);
 }

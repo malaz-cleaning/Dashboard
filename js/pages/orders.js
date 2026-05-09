@@ -1,6 +1,7 @@
 import { api } from '../api.js';
 import { showToast } from '../components/toast.js';
 import { renderModal } from '../components/modal.js';
+import { auth } from '../auth.js';
 
 const pageRoot = document.getElementById('page-content');
 const modalRoot = document.getElementById('modal-root');
@@ -71,6 +72,9 @@ function renderOrderRows(orders, clients, chalets) {
               <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ملغاة</option>
             </select>
           </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <button type="button" class="inline-flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-3 py-2 text-sm transition hover:bg-red-500/20 hover:text-red-100" data-order-id="${order.order_id}">حذف</button>
+          </td>
         </tr>
       `;
     })
@@ -116,12 +120,50 @@ function renderOrderRows(orders, clients, chalets) {
               <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ملغاة</option>
             </select>
           </div>
+          <button type="button" class="mt-4 w-full rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-4 py-3 text-sm font-medium transition hover:bg-red-500/20 hover:text-red-100" data-order-id="${order.order_id}">حذف الطلب</button>
         </div>
       `;
     })
     .join('');
 
   return { tableRows, mobileCards };
+}
+
+async function confirmDeleteOrder(orderId, refresh) {
+  return new Promise((resolve) => {
+    const content = `
+      <div class="space-y-4">
+        <p class="text-slate-200">هل تريد حذف الطلب <span class="font-semibold text-white">#${orderId}</span> نهائيًا؟</p>
+        <div class="flex flex-col sm:flex-row sm:justify-end gap-3">
+          <button class="btn btn-secondary w-full sm:w-auto" id="cancel-delete-button">إلغاء</button>
+          <button class="btn btn-primary w-full sm:w-auto bg-red-500 text-white hover:bg-red-600" id="confirm-delete-button">حذف</button>
+        </div>
+      </div>
+    `;
+
+    renderModal(modalRoot, 'تأكيد حذف الطلب', content);
+
+    const cancelButton = modalRoot.querySelector('#cancel-delete-button');
+    const confirmButton = modalRoot.querySelector('#confirm-delete-button');
+
+    cancelButton?.addEventListener('click', () => {
+      modalRoot.innerHTML = '';
+      resolve(false);
+    });
+
+    confirmButton?.addEventListener('click', async () => {
+      try {
+        await api.deleteOrder(orderId);
+        showToast('success', 'تم حذف الطلب بنجاح');
+        modalRoot.innerHTML = '';
+        refresh();
+        resolve(true);
+      } catch (error) {
+        showToast('error', 'حدث خطأ أثناء حذف الطلب');
+        resolve(false);
+      }
+    });
+  });
 }
 
 function filterOrders(orders, clients, filters) {
@@ -328,6 +370,10 @@ async function openOrderModal(clients, chalets, refresh) {
 }
 
 export async function renderOrders() {
+  if (!auth.isAuthenticated()) {
+    window.location.href = 'login.html';
+    return;
+  }
   if (!pageRoot) return;
   const [orders, clients, chalets] = await Promise.all([api.getOrders(), api.getClients(), api.getChalets()]);
 
@@ -408,6 +454,7 @@ export async function renderOrders() {
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">تاريخ الإنشاء</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">تاريخ الإنجاز</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">تغيير الحالة</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">حذف</th>
               </tr>
             </thead>
             <tbody id="orders-table-body" class="bg-slate-900 divide-y divide-slate-700"></tbody>
@@ -528,6 +575,14 @@ export async function renderOrders() {
         }
       });
     });
+
+    pageRoot.querySelectorAll('button[data-order-id]').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const orderId = e.currentTarget.dataset.orderId;
+        if (!orderId) return;
+        await confirmDeleteOrder(orderId, renderOrders);
+      });
+    });
   }
 
   addOrderButton?.addEventListener('click', () => {
@@ -541,4 +596,8 @@ export async function renderOrders() {
   updateTable();
 }
 
-renderOrders();
+document.addEventListener('DOMContentLoaded', () => {
+  renderOrders().catch((error) => {
+    console.error('Failed to render orders page:', error);
+  });
+});

@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   color-scheme: dark;
   font-family: 'Inter', 'Tajawal', sans-serif;
@@ -133,6 +137,27 @@ textarea {
   flex: 1;
   overflow-x: hidden;
   background: transparent;
+  width: 100%;
+  max-width: 100%;
+}
+.card,
+.card-padded,
+.form-input,
+.form-select,
+.form-textarea,
+.table,
+.table th,
+.table td,
+.page-content,
+.main-layout {
+  min-width: 0;
+}
+img,
+svg,
+iframe,
+video {
+  max-width: 100%;
+  height: auto;
 }
 .navbar-link {
   flex-shrink: 0;
@@ -249,20 +274,22 @@ textarea {
 }
 
 /* Enhanced Card Design */
-.card {
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.08);
+.card,
+.card-padded {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 24px;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 12px 36px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   padding: 32px;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
-.card::before {
+.card::before,
+.card-padded::before {
   content: '';
   position: absolute;
   top: 0;
@@ -341,6 +368,25 @@ textarea {
   transform: translateY(0);
 }
 
+.btn-primary.loading {
+  cursor: progress;
+  opacity: 0.85;
+}
+
+#login-form button.loading {
+  pointer-events: none;
+}
+
+#login-form button.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+#login-form button {
+  position: relative;
+}
+
 .btn-secondary {
   background: rgba(51, 65, 85, 0.8);
   color: #cbd5e1;
@@ -403,6 +449,17 @@ textarea {
   font-size: 14px;
   margin-bottom: 8px;
   display: block;
+}
+
+#login-form #error-message {
+  transition: all 0.25s ease;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+#login-form #error-message.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Badge Styles */
@@ -490,6 +547,19 @@ textarea {
 }
 .sidebar.collapsed {
   transform: translateX(-100%);
+}
+.sidebar.open {
+  transform: translateX(0);
+}
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 35;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 .sidebar-link {
   display: flex;
@@ -1549,6 +1619,14 @@ body {
     transform: translateX(-120%);
     z-index: 45;
     box-shadow: 24px 0 80px rgba(0, 0, 0, 0.35);
+  }
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 35;
+    transition: opacity 0.3s ease;
   }
   .app-shell.sidebar-open .sidebar {
     transform: translateX(0);

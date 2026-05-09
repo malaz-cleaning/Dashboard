@@ -1,17 +1,20 @@
 import { initRouter } from './router.js';
 import { renderSidebar } from './components/sidebar.js';
 import { renderNavbar } from './components/navbar.js';
+import { initAuthState } from './auth.js';
 
 const sidebarRoot = document.getElementById('sidebar');
 const navbarRoot = document.getElementById('navbar');
 
-renderSidebar(sidebarRoot);
-renderNavbar(navbarRoot);
-initRouter();
+initAuthState().then(() => {
+  renderSidebar(sidebarRoot);
+  renderNavbar(navbarRoot);
+  initRouter();
+});
 
 const sidebarToggle = document.getElementById('sidebar-toggle');
 sidebarToggle?.addEventListener('click', () => {
-  document.querySelector('.app-shell')?.classList.toggle('sidebar-open');
+  window.toggleSidebar?.(true);
 });
 
 window.requestAddOrder = () => {

@@ -23,8 +23,8 @@ export async function getFirebaseAuth() {
 }
 
 export async function getFirebaseAuthMethods() {
-  const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } = await import('firebase/auth');
-  return { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+  const { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, onIdTokenChanged } = await import('firebase/auth');
+  return { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, onIdTokenChanged };
 }
 
 export async function getFirebaseDatabase() {

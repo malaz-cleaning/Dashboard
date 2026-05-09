@@ -46,11 +46,10 @@ async function firebaseSignIn(email, password) {
 
 export async function initAuthState() {
   const auth = await getAuth();
-  const { onAuthStateChanged } = await getFirebaseAuthMethods();
+  const { onAuthStateChanged, onIdTokenChanged } = await getFirebaseAuthMethods();
   return new Promise((resolve) => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Update token in localStorage
         const token = await user.getIdToken();
         localStorage.setItem('authToken', token);
       } else {
@@ -58,6 +57,18 @@ export async function initAuthState() {
       }
       resolve();
     });
+
+    // Keep local token refreshed if Firebase provides the callback
+    if (typeof onIdTokenChanged === 'function') {
+      onIdTokenChanged(auth, async (user) => {
+        if (user) {
+          const token = await user.getIdToken();
+          localStorage.setItem('authToken', token);
+        } else {
+          localStorage.removeItem('authToken');
+        }
+      });
+    }
   });
 }
 

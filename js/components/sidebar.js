@@ -127,13 +127,15 @@ export function renderSidebar(root) {
   });
 
   // Mobile sidebar functionality
+  let toggleSidebar = (open) => {};
+
   if (isMobile) {
     const sidebar = root;
     const overlay = root.querySelector('#sidebar-overlay');
     const closeButton = root.querySelector('#sidebar-close');
     const shell = document.querySelector('.app-shell');
 
-    const toggleSidebar = (open) => {
+    toggleSidebar = (open) => {
       if (open) {
         sidebar?.classList.remove('collapsed');
         sidebar?.classList.add('open');
@@ -156,8 +158,8 @@ export function renderSidebar(root) {
 
     // Close button
     closeButton?.addEventListener('click', () => toggleSidebar(false));
-
-    // Make sidebar available globally for navbar toggle
-    window.toggleSidebar = toggleSidebar;
   }
+
+  // Make sidebar available globally for navbar toggle
+  window.toggleSidebar = toggleSidebar;
 }

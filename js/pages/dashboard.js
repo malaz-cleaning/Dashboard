@@ -1,6 +1,7 @@
 import { api } from '../api.js';
 import { renderModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { auth } from '../auth.js';
 
 const pageRoot = document.getElementById('page-content');
 const modalRoot = document.getElementById('modal-root');
@@ -197,6 +198,12 @@ function renderQuickActions() {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
         </svg>
         إضافة طلب جديد
+      </button>
+      <button class="btn-ghost w-full py-4 flex items-center justify-center gap-3 hover:bg-accent-emerald/10 hover:text-accent-emerald hover:border-accent-emerald/50 transition-all" data-href="orders.html">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z"/>
+        </svg>
+        إدارة الطلبات
       </button>
       <button class="btn-ghost w-full py-4 flex items-center justify-center gap-3 hover:bg-accent-cyan/10 hover:text-accent-cyan hover:border-accent-cyan/50 transition-all" data-href="clients.html">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -431,6 +438,10 @@ function renderRevenueSummary(revenueByMonth, bestMonth) {
 }
 
 export async function renderDashboard() {
+  if (!auth.isAuthenticated()) {
+    window.location.href = 'login.html';
+    return;
+  }
   if (!pageRoot) return;
   try {
     const clients = await api.getClients();
@@ -484,5 +495,3 @@ export async function renderDashboard() {
     window.openOrderModal = false;
   }
 }
-
-renderDashboard();

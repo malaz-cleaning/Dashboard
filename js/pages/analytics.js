@@ -1,4 +1,5 @@
 import { api } from '../api.js';
+import { auth } from '../auth.js';
 
 const pageRoot = document.getElementById('page-content');
 
@@ -49,6 +50,10 @@ function normalizeOrders(orders) {
 }
 
 export async function renderAnalytics() {
+  if (!auth.isAuthenticated()) {
+    window.location.href = 'login.html';
+    return;
+  }
   if (!pageRoot) return;
 
   const [clients, chalets, ordersRaw] = await Promise.all([
@@ -275,4 +280,8 @@ export async function renderAnalytics() {
   }
 }
 
-renderAnalytics();
+document.addEventListener('DOMContentLoaded', () => {
+  renderAnalytics().catch((error) => {
+    console.error('Failed to render analytics page:', error);
+  });
+});
