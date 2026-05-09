@@ -1,10 +1,15 @@
 import { api } from '../api.js';
 import { showToast } from '../components/toast.js';
-import { renderModal } from '../components/modal.js';
 import { auth } from '../auth.js';
+import { renderModal } from '../components/modal.js';
+import { showOrderModal } from '../utils/reusableModals.js';
 
 const pageRoot = document.getElementById('page-content');
 const modalRoot = document.getElementById('modal-root');
+
+if (!modalRoot) {
+  console.error('Modal root not found');
+}
 
 function getStatusLabel(status) {
   const map = {
@@ -73,7 +78,7 @@ function renderOrderRows(orders, clients, chalets) {
             </select>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <button type="button" class="inline-flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-3 py-2 text-sm transition hover:bg-red-500/20 hover:text-red-100" data-order-id="${order.order_id}">حذف</button>
+            <button type="button" class="inline-flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-3 py-2 text-sm transition hover:bg-red-500/20 hover:text-red-100" data-action="delete-order" data-order-id="${order.order_id}">حذف</button>
           </td>
         </tr>
       `;
@@ -120,7 +125,7 @@ function renderOrderRows(orders, clients, chalets) {
               <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ملغاة</option>
             </select>
           </div>
-          <button type="button" class="mt-4 w-full rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-4 py-3 text-sm font-medium transition hover:bg-red-500/20 hover:text-red-100" data-order-id="${order.order_id}">حذف الطلب</button>
+          <button type="button" class="mt-4 w-full rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-4 py-3 text-sm font-medium transition hover:bg-red-500/20 hover:text-red-100" data-action="delete-order" data-order-id="${order.order_id}">حذف الطلب</button>
         </div>
       `;
     })
@@ -130,6 +135,10 @@ function renderOrderRows(orders, clients, chalets) {
 }
 
 async function confirmDeleteOrder(orderId, refresh) {
+  if (!modalRoot) {
+    console.error('Modal root not available for delete confirmation');
+    return false;
+  }
   return new Promise((resolve) => {
     const content = `
       <div class="space-y-4">
@@ -159,6 +168,7 @@ async function confirmDeleteOrder(orderId, refresh) {
         refresh();
         resolve(true);
       } catch (error) {
+        console.error('Error deleting order:', error);
         showToast('error', 'حدث خطأ أثناء حذف الطلب');
         resolve(false);
       }
@@ -178,195 +188,7 @@ function filterOrders(orders, clients, filters) {
 }
 
 async function openOrderModal(clients, chalets, refresh) {
-  let currentClients = clients;
-  let currentChalets = chalets;
-
-  const selectedClientId = clients[0]?.client_id || '';
-  const chaletOptions = chalets
-    .filter((chalet) => chalet.client_id === selectedClientId)
-    .map((chalet) => `<option value="${chalet.chalet_id}">${chalet.chalet_name}</option>`)
-    .join('');
-
-  const content = `
-    <div class="space-y-4">
-      <div>
-        <label class="form-label" for="order-client">العميل</label>
-        <div class="flex flex-col gap-3 sm:flex-row">
-          <select id="order-client" class="form-select flex-1">
-            ${currentClients.map((client) => `<option value="${client.client_id}">${client.name}</option>`).join('')}
-          </select>
-          <button class="btn btn-secondary px-4 py-2" id="add-client-btn">+ عميل</button>
-        </div>
-      </div>
-      <div>
-        <label class="form-label" for="order-chalet">الشاليه</label>
-        <div class="flex flex-col gap-3 sm:flex-row">
-          <select id="order-chalet" class="form-select flex-1">
-            ${chaletOptions}
-          </select>
-          <button class="btn btn-secondary px-4 py-2" id="add-chalet-btn">+ شاليه</button>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="form-label" for="order-status">الحالة</label>
-          <select id="order-status" class="form-select">
-            <option value="pending">معلقة</option>
-            <option value="in_progress">قيد التنفيذ</option>
-            <option value="done_unpaid">تمت ولم يُدفع</option>
-            <option value="done_paid">تمت ودُفع</option>
-            <option value="cancelled">ملغاة</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label" for="order-price">السعر</label>
-          <input id="order-price" type="number" class="form-input" placeholder="مثلاً 420" />
-        </div>
-      </div>
-      <div>
-        <label class="form-label" for="order-notes">الملاحظات</label>
-        <textarea id="order-notes" rows="3" class="form-textarea" placeholder="تفاصيل إضافية"></textarea>
-      </div>
-      <div class="flex justify-end pt-4">
-        <button class="btn btn-primary" id="save-order-button">حفظ الطلب</button>
-      </div>
-    </div>
-  `;
-
-  renderModal(modalRoot, 'إضافة طلب جديد', content);
-
-  const clientSelect = modalRoot.querySelector('#order-client');
-  const chaletSelect = modalRoot.querySelector('#order-chalet');
-  const addClientBtn = modalRoot.querySelector('#add-client-btn');
-  const addChaletBtn = modalRoot.querySelector('#add-chalet-btn');
-  const saveButton = modalRoot.querySelector('#save-order-button');
-
-  function refreshChalets() {
-    const currentClientId = clientSelect.value;
-    const filtered = currentChalets.filter((item) => item.client_id === currentClientId);
-    chaletSelect.innerHTML = filtered.length
-      ? filtered.map((item) => `<option value="${item.chalet_id}">${item.chalet_name}</option>`).join('')
-      : '<option value="">لا يوجد شاليهات</option>';
-  }
-
-  clientSelect?.addEventListener('change', refreshChalets);
-
-  // Add new client modal
-  addClientBtn?.addEventListener('click', () => {
-    const clientModalContent = `
-      <div class="space-y-4">
-        <div>
-          <label class="form-label" for="new-client-name">الاسم</label>
-          <input id="new-client-name" type="text" class="form-input" placeholder="اسم العميل" />
-        </div>
-        <div>
-          <label class="form-label" for="new-client-phone">الهاتف</label>
-          <input id="new-client-phone" type="tel" class="form-input" placeholder="رقم الهاتف" />
-        </div>
-        <div>
-          <label class="form-label" for="new-client-type">النوع</label>
-          <select id="new-client-type" class="form-select">
-            <option value="owner">مالك مباشر</option>
-            <option value="broker">سمسار</option>
-          </select>
-        </div>
-        <div class="flex justify-end">
-          <button class="btn btn-primary" id="save-new-client-button">حفظ العميل</button>
-        </div>
-      </div>
-    `;
-    
-    renderModal(modalRoot, 'إضافة عميل جديد', clientModalContent);
-    
-    const saveNewClientButton = modalRoot.querySelector('#save-new-client-button');
-    saveNewClientButton?.addEventListener('click', async () => {
-      const name = modalRoot.querySelector('#new-client-name')?.value.trim();
-      const phone = modalRoot.querySelector('#new-client-phone')?.value.trim();
-      const type = modalRoot.querySelector('#new-client-type')?.value;
-
-      if (!name || !phone) {
-        showToast('error', 'الرجاء تعبئة الاسم والهاتف');
-        return;
-      }
-
-      const newClient = await api.addClient({ name, phone, type });
-      currentClients.push(newClient);
-      showToast('success', 'تم إضافة العميل بنجاح');
-      
-      // Re-render the order modal
-      await openOrderModal(currentClients, currentChalets, refresh);
-    });
-  });
-
-  // Add new chalet modal
-  addChaletBtn?.addEventListener('click', () => {
-    const chaletModalContent = `
-      <div class="space-y-4">
-        <div>
-          <label class="form-label" for="new-chalet-name">الشاليه</label>
-          <input id="new-chalet-name" type="text" class="form-input" placeholder="اسم الشاليه" />
-        </div>
-        <div>
-          <label class="form-label" for="new-chalet-location">الموقع</label>
-          <input id="new-chalet-location" type="text" class="form-input" placeholder="الموقع" />
-        </div>
-        <div>
-          <label class="form-label" for="new-chalet-client">العميل</label>
-          <select id="new-chalet-client" class="form-select">
-            ${currentClients.map((client) => `<option value="${client.client_id}">${client.name}</option>`).join('')}
-          </select>
-        </div>
-        <div>
-          <label class="form-label" for="new-chalet-details">التفاصيل</label>
-          <textarea id="new-chalet-details" rows="3" class="form-textarea" placeholder="تفاصيل الشاليه"></textarea>
-        </div>
-        <div class="flex justify-end">
-          <button class="btn btn-primary" id="save-new-chalet-button">حفظ الشاليه</button>
-        </div>
-      </div>
-    `;
-    
-    renderModal(modalRoot, 'إضافة شاليه جديد', chaletModalContent);
-    
-    const saveNewChaletButton = modalRoot.querySelector('#save-new-chalet-button');
-    saveNewChaletButton?.addEventListener('click', async () => {
-      const name = modalRoot.querySelector('#new-chalet-name')?.value.trim();
-      const location = modalRoot.querySelector('#new-chalet-location')?.value.trim();
-      const details = modalRoot.querySelector('#new-chalet-details')?.value.trim();
-      const clientId = modalRoot.querySelector('#new-chalet-client')?.value;
-
-      if (!name || !location || !clientId) {
-        showToast('error', 'الرجاء تعبئة جميع الحقول');
-        return;
-      }
-
-      const newChalet = await api.addChalet({ client_id: clientId, chalet_name: name, location, details });
-      currentChalets.push(newChalet);
-      showToast('success', 'تم إضافة الشاليه بنجاح');
-      
-      // Re-render the order modal
-      await openOrderModal(currentClients, currentChalets, refresh);
-    });
-  });
-
-  saveButton?.addEventListener('click', async () => {
-    const clientId = clientSelect?.value;
-    const chaletId = chaletSelect?.value;
-    const status = modalRoot.querySelector('#order-status')?.value;
-    const price = modalRoot.querySelector('#order-price')?.value.trim();
-    const notes = modalRoot.querySelector('#order-notes')?.value.trim();
-    const created_at = new Date().toISOString().split('T')[0];
-
-    if (!clientId || !chaletId || !price) {
-      showToast('error', 'الرجاء تعبئة العميل والشاليه والسعر');
-      return;
-    }
-
-    await api.addOrder({ client_id: clientId, chalet_id: chaletId, status, price: Number(price), notes, created_at });
-    showToast('success', 'تم إضافة الطلب بنجاح');
-    modalRoot.innerHTML = '';
-    refresh();
-  });
+  await showOrderModal(clients, chalets, refresh);
 }
 
 export async function renderOrders() {
@@ -559,35 +381,40 @@ export async function renderOrders() {
     totalDonePaidSpan.textContent = totals.done_paid.toLocaleString('ar-EG');
     totalCancelledSpan.textContent = totals.cancelled.toLocaleString('ar-EG');
     totalAllSpan.textContent = totals.all.toLocaleString('ar-EG');
-
-    pageRoot.querySelectorAll('select[data-order-id]').forEach((select) => {
-      select.addEventListener('change', async (e) => {
-        const orderId = e.target.dataset.orderId;
-        const newStatus = e.target.value;
-
-        try {
-          await api.updateOrder(orderId, { status: newStatus });
-          showToast('success', 'تم تحديث حالة الطلب بنجاح');
-          renderOrders();
-        } catch (error) {
-          showToast('error', 'خطأ في تحديث الطلب');
-          e.target.value = e.target.dataset.currentStatus;
-        }
-      });
-    });
-
-    pageRoot.querySelectorAll('button[data-order-id]').forEach((button) => {
-      button.addEventListener('click', async (e) => {
-        const orderId = e.currentTarget.dataset.orderId;
-        if (!orderId) return;
-        await confirmDeleteOrder(orderId, renderOrders);
-      });
-    });
   }
 
   addOrderButton?.addEventListener('click', () => {
     openOrderModal(clients, chalets, renderOrders);
   });
+
+  pageRoot.dataset.ordersEventsBound = pageRoot.dataset.ordersEventsBound || '';
+  if (!pageRoot.dataset.ordersEventsBound) {
+    document.addEventListener('click', async (event) => {
+      const deleteBtn = event.target.closest('button[data-action="delete-order"]');
+      if (!deleteBtn) return;
+      const orderId = deleteBtn.dataset.orderId;
+      if (!orderId) return;
+      await confirmDeleteOrder(orderId, renderOrders);
+    });
+
+    document.addEventListener('change', async (event) => {
+      const select = event.target.closest('select[data-order-id]');
+      if (!select) return;
+      const orderId = select.dataset.orderId;
+      const newStatus = select.value;
+      if (!orderId) return;
+
+      try {
+        await api.updateOrder(orderId, { status: newStatus });
+        showToast('success', 'تم تحديث حالة الطلب بنجاح');
+        renderOrders();
+      } catch (error) {
+        showToast('error', 'خطأ في تحديث الطلب');
+        select.value = select.dataset.currentStatus;
+      }
+    });
+    pageRoot.dataset.ordersEventsBound = 'true';
+  }
 
   searchInput?.addEventListener('input', updateTable);
   statusSelect?.addEventListener('change', updateTable);
@@ -596,8 +423,6 @@ export async function renderOrders() {
   updateTable();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderOrders().catch((error) => {
-    console.error('Failed to render orders page:', error);
-  });
-});
+if (window.location.pathname.includes('orders.html')) {
+  document.addEventListener('DOMContentLoaded', renderOrders);
+}

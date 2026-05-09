@@ -1,115 +1,16 @@
 import { api } from '../api.js';
-import { renderModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 import { auth } from '../auth.js';
+import { showClientModal, showChaletModal } from '../utils/reusableModals.js';
 
 const pageRoot = document.getElementById('page-content');
 
-function openClientModal(onClientAdded) {
-  const content = `
-    <div class="space-y-4">
-      <div>
-        <label class="form-label" for="client-name">الاسم</label>
-        <input id="client-name" type="text" class="form-input" placeholder="اسم العميل" />
-      </div>
-      <div>
-        <label class="form-label" for="client-phone">الهاتف</label>
-        <input id="client-phone" type="tel" class="form-input" placeholder="رقم الهاتف" />
-      </div>
-      <div>
-        <label class="form-label" for="client-type">النوع</label>
-        <select id="client-type" class="form-select">
-          <option value="owner">مالك مباشر</option>
-          <option value="broker">سمسار</option>
-        </select>
-      </div>
-      <div class="flex justify-end">
-        <button class="btn btn-primary" id="save-client-button">حفظ العميل</button>
-      </div>
-    </div>
-  `;
-
-  renderModal(document.getElementById('modal-root'), 'إضافة عميل جديد', content);
-  const saveButton = document.getElementById('save-client-button');
-  saveButton?.addEventListener('click', async () => {
-    const name = document.getElementById('client-name')?.value.trim();
-    const phone = document.getElementById('client-phone')?.value.trim();
-    const type = document.getElementById('client-type')?.value;
-
-    if (!name || !phone) {
-      showToast('error', 'الرجاء تعبئة الاسم والهاتف');
-      return;
-    }
-
-    await api.addClient({ name, phone, type });
-    document.getElementById('modal-root').innerHTML = '';
-    showToast('success', 'تم إضافة العميل بنجاح');
-    if (onClientAdded) onClientAdded();
-  });
+async function openClientModal(onClientAdded) {
+  await showClientModal(onClientAdded);
 }
 
-function openChaletModal(clients, refresh) {
-  const clientOptions = clients.map((client) => `<option value="${client.client_id}">${client.name}</option>`).join('');
-  const content = `
-    <div class="space-y-4">
-      <div>
-        <label class="form-label" for="chalet-name">الشاليه</label>
-        <input id="chalet-name" type="text" class="form-input" placeholder="اسم الشاليه" />
-      </div>
-      <div>
-        <label class="form-label" for="chalet-location">الموقع</label>
-        <input id="chalet-location" type="text" class="form-input" placeholder="الموقع" />
-      </div>
-      <div>
-        <label class="form-label" for="chalet-client">العميل</label>
-        <div class="flex gap-3 items-end">
-          <select id="chalet-client" class="form-select flex-1">${clientOptions}</select>
-          <button class="btn btn-secondary px-4 py-2" id="add-new-client-btn">+ عميل</button>
-        </div>
-      </div>
-      <div>
-        <label class="form-label" for="chalet-details">التفاصيل</label>
-        <textarea id="chalet-details" rows="4" class="form-textarea" placeholder="تفاصيل الشاليه"></textarea>
-      </div>
-      <div class="flex justify-end">
-        <button class="btn btn-primary" id="save-chalet-button">حفظ الشاليه</button>
-      </div>
-    </div>
-  `;
-
-  renderModal(document.getElementById('modal-root'), 'إضافة شاليه جديد', content);
-
-  const addClientBtn = document.getElementById('add-new-client-btn');
-  addClientBtn?.addEventListener('click', () => {
-    openClientModal(async () => {
-      const updatedClients = await api.getClients();
-      const selectField = document.getElementById('chalet-client');
-      if (selectField) {
-        selectField.innerHTML = updatedClients
-          .map((client) => `<option value="${client.client_id}">${client.name}</option>`)
-          .join('');
-        selectField.value = updatedClients[updatedClients.length - 1]?.client_id;
-      }
-    });
-  });
-
-  const saveButton = document.getElementById('save-chalet-button');
-  saveButton?.addEventListener('click', async () => {
-    const chalet_name = document.getElementById('chalet-name')?.value.trim();
-    const location = document.getElementById('chalet-location')?.value.trim();
-    const details = document.getElementById('chalet-details')?.value.trim();
-    const client_id = document.getElementById('chalet-client')?.value;
-
-    if (!chalet_name || !location || !client_id) {
-      showToast('error', 'الرجاء تعبئة اسم الشاليه والموقع واختيار العميل');
-      return;
-    }
-
-    await api.addChalet({ client_id, chalet_name, location, details });
-    document.getElementById('modal-root').innerHTML = '';
-    showToast('success', 'تم إضافة الشاليه بنجاح');
-    refresh();
-  });
+async function openChaletModal(clients, refresh) {
+  await showChaletModal(clients, refresh);
 }
 
 function renderChaletRows(filtered, clients, orders) {
@@ -289,8 +190,6 @@ export async function renderChalets() {
   updateTable();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderChalets().catch((error) => {
-    console.error('Failed to render chalets page:', error);
-  });
-});
+if (window.location.pathname.includes('chalets.html')) {
+  document.addEventListener('DOMContentLoaded', renderChalets);
+}

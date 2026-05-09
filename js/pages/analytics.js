@@ -1,3 +1,4 @@
+import Chart from 'chart.js/auto';
 import { api } from '../api.js';
 import { auth } from '../auth.js';
 
@@ -280,8 +281,6 @@ export async function renderAnalytics() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderAnalytics().catch((error) => {
-    console.error('Failed to render analytics page:', error);
-  });
-});
+if (window.location.pathname.includes('analytics.html')) {
+  document.addEventListener('DOMContentLoaded', renderAnalytics);
+}

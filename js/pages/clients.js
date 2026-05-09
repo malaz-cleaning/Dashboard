@@ -1,51 +1,12 @@
 import { api } from '../api.js';
-import { renderModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 import { auth } from '../auth.js';
+import { showClientModal } from '../utils/reusableModals.js';
 
 const pageRoot = document.getElementById('page-content');
 
-function openClientModal(onClientAdded) {
-  const content = `
-    <div class="space-y-4">
-      <div>
-        <label class="form-label" for="client-name">الاسم</label>
-        <input id="client-name" type="text" class="form-input" placeholder="اسم العميل" />
-      </div>
-      <div>
-        <label class="form-label" for="client-phone">الهاتف</label>
-        <input id="client-phone" type="tel" class="form-input" placeholder="رقم الهاتف" />
-      </div>
-      <div>
-        <label class="form-label" for="client-type">النوع</label>
-        <select id="client-type" class="form-select">
-          <option value="owner">مالك مباشر</option>
-          <option value="broker">سمسار</option>
-        </select>
-      </div>
-      <div class="flex justify-end">
-        <button class="btn btn-primary" id="save-client-button">حفظ العميل</button>
-      </div>
-    </div>
-  `;
-
-  renderModal(document.getElementById('modal-root'), 'إضافة عميل جديد', content);
-  const saveButton = document.getElementById('save-client-button');
-  saveButton?.addEventListener('click', async () => {
-    const name = document.getElementById('client-name')?.value.trim();
-    const phone = document.getElementById('client-phone')?.value.trim();
-    const type = document.getElementById('client-type')?.value;
-
-    if (!name || !phone) {
-      showToast('error', 'الرجاء تعبئة الاسم والهاتف');
-      return;
-    }
-
-    await api.addClient({ name, phone, type });
-    document.getElementById('modal-root').innerHTML = '';
-    showToast('success', 'تم إضافة العميل بنجاح');
-    if (onClientAdded) onClientAdded();
-  });
+async function openClientModal(onClientAdded) {
+  await showClientModal(onClientAdded);
 }
 
 function renderClientRows(filtered, orders, chalets) {
@@ -152,8 +113,8 @@ export async function renderClients() {
             <label class="form-label" for="client-type-filter">النوع</label>
             <select id="client-type-filter" class="form-select">
               <option value="">كل الأنواع</option>
-              <option value="owner">مالك مباشر</option>
-              <option value="broker">سمسار</option>
+              <option value="owner">owner</option>
+              <option value="broker">broker</option>
             </select>
           </div>
         </div>
@@ -221,8 +182,6 @@ export async function renderClients() {
   updateTable();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderClients().catch((error) => {
-    console.error('Failed to render clients page:', error);
-  });
-});
+if (window.location.pathname.includes('clients.html')) {
+  document.addEventListener('DOMContentLoaded', renderClients);
+}

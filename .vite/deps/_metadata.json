@@ -1,0 +1,40 @@
+{
+  "hash": "c4c133fb",
+  "configHash": "72a3f12a",
+  "lockfileHash": "7bec16c1",
+  "browserHash": "95bc43e1",
+  "optimized": {
+    "firebase/auth": {
+      "src": "../../node_modules/firebase/auth/dist/esm/index.esm.js",
+      "file": "firebase_auth.js",
+      "fileHash": "58875c5f",
+      "needsInterop": false
+    },
+    "firebase/app": {
+      "src": "../../node_modules/firebase/app/dist/esm/index.esm.js",
+      "file": "firebase_app.js",
+      "fileHash": "08f81a84",
+      "needsInterop": false
+    },
+    "firebase/database": {
+      "src": "../../node_modules/firebase/database/dist/esm/index.esm.js",
+      "file": "firebase_database.js",
+      "fileHash": "e8013aee",
+      "needsInterop": false
+    },
+    "chart.js/auto": {
+      "src": "../../node_modules/chart.js/auto/auto.js",
+      "file": "chart__js_auto.js",
+      "fileHash": "a4270cc8",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-LNSTIK2H": {
+      "file": "chunk-LNSTIK2H.js"
+    },
+    "chunk-V6TY7KAL": {
+      "file": "chunk-V6TY7KAL.js"
+    }
+  }
+}

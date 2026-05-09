@@ -1,4 +1,4 @@
-const CACHE_NAME = 'malaz-cleaning-v1';
+const CACHE_NAME = 'malaz-cleaning-v3';
 const urlsToCache = [
   new URL('./', self.location).href,
   new URL('./index.html', self.location).href,
@@ -8,75 +8,87 @@ const urlsToCache = [
   new URL('./orders.html', self.location).href,
   new URL('./clients.html', self.location).href,
   new URL('./chalets.html', self.location).href,
-  new URL('./assets/styles-70MUTurc.css', self.location).href,
-  new URL('./assets/manifest-DeqKMrzs.json', self.location).href,
-  new URL('./assets/auth-BSM37I4d.js', self.location).href,
-  new URL('./assets/common-DBXkofcI.js', self.location).href,
-  new URL('./assets/main-CCNsLsoH.js', self.location).href,
-  new URL('./assets/sidebar-DZfIzh0g.js', self.location).href,
-  new URL('./assets/toast-CrpcpBgl.js', self.location).href,
-  new URL('./assets/modal-JN-dnhWx.js', self.location).href,
-  new URL('./assets/index-BuW1CxFr.js', self.location).href,
-  new URL('./assets/orders-BYd0T6i5.js', self.location).href,
-  new URL('./assets/clients-DAljZRK9.js', self.location).href,
-  new URL('./assets/chalets-DdHajaCU.js', self.location).href,
-  new URL('./assets/analytics-DbvfvDnJ.js', self.location).href,
-  new URL('./assets/login-D_fHrbTq.js', self.location).href,
 ];
+
+function isSameOrigin(request) {
+  return new URL(request.url).origin === self.location.origin;
+}
 
 // Install Service Worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then((cache) => {
+        return cache.addAll(urlsToCache);
+      })
       .catch((error) => {
         console.error('SW install cache failed:', error);
       })
   );
+  self.skipWaiting();
 });
 
-// Fetch from cache
+// Fetch from network or cache
 self.addEventListener('fetch', (event) => {
-  // For assets (CSS, JS, images), try network first, then cache
-  if (event.request.url.includes('/assets/') ||
-      event.request.url.includes('.css') ||
-      event.request.url.includes('.js') ||
-      event.request.url.includes('.json')) {
+  const request = event.request;
+
+  // Only handle same-origin requests in the SW
+  if (!isSameOrigin(request)) {
+    return;
+  }
+
+  const acceptHeader = request.headers.get('Accept') || '';
+  const isNavigation = request.mode === 'navigate' || acceptHeader.includes('text/html');
+  const isStaticAsset = request.url.includes('/assets/') || request.url.endsWith('.css') || request.url.endsWith('.js') || request.url.endsWith('.json');
+
+  if (isNavigation) {
     event.respondWith(
-      fetch(event.request)
+      fetch(request)
         .then((response) => {
-          // Cache successful responses
-          if (response.ok) {
+          if (response && response.ok) {
             const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
           }
           return response;
         })
         .catch(() => {
-          // Fallback to cache if network fails
-          return caches.match(event.request);
+          return caches.match(request)
+            .then((cacheResponse) => cacheResponse || caches.match(new URL('./offline.html', self.location).href));
         })
     );
-  } else {
-    // For pages, try cache first, then network
-    event.respondWith(
-      caches.match(event.request)
-        .then((response) => {
-          return response || fetch(event.request)
-            .catch(() => {
-              // Return offline page for navigation requests
-              if (event.request.mode === 'navigate') {
-                return caches.match(new URL('./offline.html', self.location).href);
-              }
-            });
-        })
-    );
+    return;
   }
+
+  if (isStaticAsset) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        const networkFetch = fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.ok) {
+              const cloned = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
+            }
+            return networkResponse;
+          })
+          .catch(() => cachedResponse);
+
+        return cachedResponse || networkFetch;
+      })
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      return cachedResponse || fetch(request).catch(() => {
+        if (request.mode === 'navigate') {
+          return caches.match(new URL('./offline.html', self.location).href);
+        }
+      });
+    })
+  );
 });
 
-// Update Service Worker
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -89,5 +101,12 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  self.clients.claim();
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 

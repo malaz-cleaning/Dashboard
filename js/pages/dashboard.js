@@ -2,9 +2,97 @@ import { api } from '../api.js';
 import { renderModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 import { auth } from '../auth.js';
+import * as XLSX from 'xlsx';
 
 const pageRoot = document.getElementById('page-content');
 const modalRoot = document.getElementById('modal-root');
+
+if (!modalRoot) {
+  console.error('Modal root not found in dashboard');
+}
+
+/**
+ * Create and download Excel backup with all data
+ */
+async function downloadExcelBackup() {
+  try {
+    showToast('info', 'جاري تحضير البيانات...');
+    
+    // Fetch all data
+    const orders = await api.getOrders();
+    const clients = await api.getClients();
+    const chalets = await api.getChalets();
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Format orders data
+    const ordersData = orders.map(order => {
+      const client = clients.find(c => c.client_id === order.client_id) || {};
+      const chalet = chalets.find(ch => ch.chalet_id === order.chalet_id) || {};
+      return {
+        'رقم الطلب': order.order_id || '',
+        'العميل': client.name || '',
+        'نوع العميل': client.type || '',
+        'الشاليه': chalet.chalet_name || '',
+        'الحالة': getStatusLabel(order.status) || '',
+        'السعر': Number(order.price || 0),
+        'التاريخ': order.created_at || '',
+        'الملاحظات': order.notes || ''
+      };
+    });
+    
+    // Format clients data
+    const clientsData = clients.map(client => ({
+      'معرف العميل': client.client_id || '',
+      'الاسم': client.name || '',
+      'النوع': client.type || '',
+      'الهاتف': client.phone || '',
+      'البريد': client.email || '',
+      'التاريخ': client.created_at || ''
+    }));
+    
+    // Format chalets data
+    const chaletsData = chalets.map(chalet => ({
+      'معرف الشاليه': chalet.chalet_id || '',
+      'الاسم': chalet.chalet_name || '',
+      'العميل': clients.find(c => c.client_id === chalet.client_id)?.name || '',
+      'الموقع': chalet.location || '',
+      'عدد الغرف': chalet.rooms || '',
+      'السعة': chalet.capacity || '',
+      'التاريخ': chalet.created_at || ''
+    }));
+    
+    // Add sheets to workbook
+    const ws_orders = XLSX.utils.json_to_sheet(ordersData);
+    const ws_clients = XLSX.utils.json_to_sheet(clientsData);
+    const ws_chalets = XLSX.utils.json_to_sheet(chaletsData);
+    
+    // Set column widths
+    const setColumnWidths = (ws, widths) => {
+      ws['!cols'] = widths;
+    };
+    
+    setColumnWidths(ws_orders, [15, 15, 12, 20, 15, 12, 15, 25]);
+    setColumnWidths(ws_clients, [15, 15, 12, 15, 20, 15]);
+    setColumnWidths(ws_chalets, [15, 15, 15, 15, 12, 12, 15]);
+    
+    XLSX.utils.book_append_sheet(wb, ws_orders, 'الطلبات');
+    XLSX.utils.book_append_sheet(wb, ws_clients, 'العملاء');
+    XLSX.utils.book_append_sheet(wb, ws_chalets, 'الشاليهات');
+    
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `malaz-backup-${timestamp}.xlsx`;
+    
+    // Download the file
+    XLSX.writeFile(wb, filename);
+    showToast('success', 'تم تحميل الملف بنجاح');
+  } catch (error) {
+    console.error('Error downloading Excel backup:', error);
+    showToast('error', 'حدث خطأ أثناء تحضير الملف');
+  }
+}
 
 function renderStatsCard(label, value, icon, color) {
   const iconHtml = icon ? `<div class="w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center mb-3">
@@ -102,7 +190,7 @@ function renderRecentOrders(orders, clients, chalets) {
             <div class="w-8 h-8 bg-accent-cyan/20 rounded-lg flex items-center justify-center">
               <span class="text-accent-cyan text-sm font-semibold">${(client.name || 'غير محدد').charAt(0)}</span>
             </div>
-            <span class="text-sm">${client.name || 'غير محدد'}</span>
+            <span class="text-sm font-medium text-slate-100">${client.name || 'غير محدد'}</span>
           </div>
         </td>
         <td class="px-4 py-4 text-slate-200">
@@ -112,7 +200,7 @@ function renderRecentOrders(orders, clients, chalets) {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
               </svg>
             </div>
-            <span class="text-sm">${chalet.chalet_name || 'غير محدد'}</span>
+            <span class="text-sm font-medium text-slate-100">${chalet.chalet_name || 'غير محدد'}</span>
           </div>
         </td>
         <td class="px-4 py-4">${statusBadge(order.status)}</td>
@@ -223,23 +311,33 @@ function renderQuickActions() {
         </svg>
         عرض التحليلات
       </button>
+      <button class="btn-ghost w-full py-4 flex items-center justify-center gap-3 hover:bg-accent-amber/10 hover:text-accent-amber hover:border-accent-amber/50 transition-all" id="download-excel-button">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        تحميل Excel
+      </button>
     </div>
   </div>`;
 }
 
 
-async function renderAddOrderModal() {
+async function renderAddOrderModal(selectedClientId = '', selectedChaletId = '') {
+  if (!modalRoot) {
+    console.error('Modal root not available for add order modal');
+    return;
+  }
   const clients = await api.getClients();
   const chalets = await api.getChalets();
-  const selectedClientId = clients[0]?.client_id || '';
+  const activeClientId = selectedClientId || clients[0]?.client_id || '';
 
   const clientOptions = clients
-    .map((client) => '<option value="' + client.client_id + '">' + client.name + ' (' + client.type + ')</option>')
+    .map((client) => '<option value="' + client.client_id + '"' + (client.client_id === activeClientId ? ' selected' : '') + '>' + client.name + ' (' + client.type + ')</option>')
     .join('');
 
   const chaletOptions = chalets
-    .filter((chalet) => chalet.client_id === selectedClientId)
-    .map((chalet) => '<option value="' + chalet.chalet_id + '">' + chalet.chalet_name + '</option>')
+    .filter((chalet) => chalet.client_id === activeClientId)
+    .map((chalet) => '<option value="' + chalet.chalet_id + '"' + (chalet.chalet_id === selectedChaletId ? ' selected' : '') + '>' + chalet.chalet_name + '</option>')
     .join('');
 
   const content = '<div class="space-y-4">' +
@@ -247,14 +345,14 @@ async function renderAddOrderModal() {
       '<label class="form-label" for="order-client">العميل</label>' +
       '<div class="flex flex-col sm:flex-row gap-3 items-start sm:items-end">' +
         '<select id="order-client" class="form-select flex-1">' + clientOptions + '</select>' +
-        '<button class="btn btn-secondary px-3 py-2 sm:px-4 w-full sm:w-auto" id="add-client-button">+ عميل</button>' +
+        '<button type="button" class="btn btn-secondary px-3 py-2 sm:px-4 w-full sm:w-auto" id="add-client-button">+ عميل</button>' +
       '</div>' +
     '</div>' +
     '<div>' +
       '<label class="form-label" for="order-chalet">الشاليه</label>' +
       '<div class="flex flex-col sm:flex-row gap-3 items-start sm:items-end">' +
         '<select id="order-chalet" class="form-select flex-1">' + chaletOptions + '</select>' +
-        '<button class="btn btn-secondary px-3 py-2 sm:px-4 w-full sm:w-auto" id="add-chalet-button">+ شاليه</button>' +
+        '<button type="button" class="btn btn-secondary px-3 py-2 sm:px-4 w-full sm:w-auto" id="add-chalet-button">+ شاليه</button>' +
       '</div>' +
     '</div>' +
     '<div class="grid gap-4 grid-cols-1 md:grid-cols-2">' +
@@ -283,7 +381,7 @@ async function renderAddOrderModal() {
         '<input id="order-date" type="date" class="form-input" value="' + new Date().toISOString().split('T')[0] + '" />' +
       '</div>' +
       '<div class="flex justify-start md:justify-end">' +
-        '<button class="btn btn-primary w-full md:w-auto" id="save-order-button">حفظ الطلب</button>' +
+        '<button type="button" class="btn btn-primary w-full md:w-auto" id="save-order-button">حفظ الطلب</button>' +
       '</div>' +
     '</div>' +
   '</div>';
@@ -324,15 +422,31 @@ async function renderAddOrderModal() {
         <div>
           <label class="form-label" for="new-client-type">النوع</label>
           <select id="new-client-type" class="form-select">
-            <option value="owner">مالك مباشر</option>
-            <option value="broker">سمسار</option>
+            <option value="owner">owner</option>
+            <option value="broker">broker</option>
           </select>
         </div>
       <div class="flex flex-col sm:flex-row gap-3 justify-end">
-        <button class="btn btn-primary w-full sm:w-auto" id="save-new-client-button">حفظ العميل</button>
+        <button type="button" class="btn btn-primary w-full sm:w-auto" id="save-new-client-button">حفظ العميل</button>
       </div>
     </div>`;
     renderModal(modalRoot, 'إضافة عميل جديد', clientModalContent);
+
+    const saveNewClientButton = modalRoot.querySelector('#save-new-client-button');
+    saveNewClientButton?.addEventListener('click', async () => {
+      const name = modalRoot.querySelector('#new-client-name')?.value.trim();
+      const phone = modalRoot.querySelector('#new-client-phone')?.value.trim();
+      const type = modalRoot.querySelector('#new-client-type')?.value;
+
+      if (!name || !phone || !type) {
+        showToast('error', 'الرجاء تعبئة جميع الحقول');
+        return;
+      }
+
+      const newClient = await api.addClient({ name, phone, type });
+      showToast('success', 'تم إضافة العميل بنجاح');
+      await renderAddOrderModal(newClient.client_id);
+    });
   });
 
   addChaletButton?.addEventListener('click', () => {
@@ -358,7 +472,7 @@ async function renderAddOrderModal() {
         '<textarea id="new-chalet-details" rows="4" class="form-textarea" placeholder="تفاصيل الشاليه"></textarea>' +
       '</div>' +
       '<div class="flex flex-col sm:flex-row gap-3 justify-end">' +
-        '<button class="btn btn-primary w-full sm:w-auto" id="save-new-chalet-button">حفظ الشاليه</button>' +
+        '<button type="button" class="btn btn-primary w-full sm:w-auto" id="save-new-chalet-button">حفظ الشاليه</button>' +
       '</div>' +
     '</div>';
 
@@ -376,9 +490,9 @@ async function renderAddOrderModal() {
         return;
       }
 
-      await api.addChalet({ client_id: clientId, chalet_name: name, location, details });
+      const newChalet = await api.addChalet({ client_id: clientId, chalet_name: name, location, details });
       showToast('success', 'تم إضافة الشاليه بنجاح');
-      await renderAddOrderModal();
+      await renderAddOrderModal(clientId, newChalet.chalet_id);
     });
   });
 
@@ -388,17 +502,22 @@ async function renderAddOrderModal() {
       return;
     }
 
-    await api.addOrder({
-      client_id: clientSelect.value,
-      chalet_id: chaletSelect.value,
-      status: statusSelect.value,
-      price: priceInput.value,
-      notes: notesInput.value,
-      created_at: dateInput.value,
-    });
-    showToast('success', 'تم إضافة الطلب بنجاح');
-    modalRoot.innerHTML = '';
-    renderDashboard();
+    try {
+      await api.addOrder({
+        client_id: clientSelect.value,
+        chalet_id: chaletSelect.value,
+        status: statusSelect.value,
+        price: priceInput.value,
+        notes: notesInput.value,
+        created_at: dateInput.value,
+      });
+      showToast('success', 'تم إضافة الطلب بنجاح');
+      modalRoot.innerHTML = '';
+      renderDashboard();
+    } catch (error) {
+      console.error('Error adding order:', error);
+      showToast('error', 'حدث خطأ أثناء إضافة الطلب');
+    }
   });
 }
 
@@ -482,6 +601,10 @@ export async function renderDashboard() {
 
   document.getElementById('add-order-button')?.addEventListener('click', () => {
     renderAddOrderModal();
+  });
+
+  document.getElementById('download-excel-button')?.addEventListener('click', () => {
+    downloadExcelBackup();
   });
 
   document.querySelectorAll('[data-href]').forEach((button) => {

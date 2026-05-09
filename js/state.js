@@ -6,8 +6,8 @@ export const state = {
 
 export function initializeState() {
   state.clients = [
-    { client_id: 'CL001', type: 'owner', name: 'مالك مباشر', phone: '0551234567', created_at: '2026-05-07', is_deleted: false },
-    { client_id: 'CL002', type: 'broker', name: 'سمسار النخبة', phone: '0559876543', created_at: '2026-04-22', is_deleted: false },
+    { client_id: 'CL001', type: 'owner', name: 'owner', phone: '0551234567', created_at: '2026-05-07', is_deleted: false },
+    { client_id: 'CL002', type: 'broker', name: 'broker النخبة', phone: '0559876543', created_at: '2026-04-22', is_deleted: false },
     { client_id: 'CL003', type: 'owner', name: 'عائشة للضيافة', phone: '0551112233', created_at: '2026-03-15', is_deleted: false },
   ];
   state.chalets = [
