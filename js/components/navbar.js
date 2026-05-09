@@ -42,12 +42,12 @@ async function downloadExcelBackup() {
 }
 
 function getCurrentPage() {
-  const path = window.location.pathname;
-  if (path.includes('orders')) return 'orders.html';
-  if (path.includes('clients')) return 'clients.html';
-  if (path.includes('chalets')) return 'chalets.html';
-  if (path.includes('analytics')) return 'analytics.html';
-  if (path.includes('settings')) return 'settings.html';
+  const hash = window.location.hash.toLowerCase();
+  if (hash === '#orders') return 'orders.html';
+  if (hash === '#clients') return 'clients.html';
+  if (hash === '#chalets') return 'chalets.html';
+  if (hash === '#analytics') return 'analytics.html';
+  if (hash === '#settings') return 'settings.html';
   return 'index.html';
 }
 
@@ -169,7 +169,7 @@ export function renderNavbar(root) {
               </div>
             </div>
           </div>
-          <a href="#dashboard" class="navbar-link group ${currentPage === 'index.html' ? 'bg-primary-500/20 text-primary-400 border-r-4 border-primary-400' : ''}">
+          <a href="#dashboard" class="navbar-link nav-link group ${currentPage === 'index.html' ? 'bg-primary-500/20 text-primary-400 border-r-4 border-primary-400' : ''}">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-gradient-to-br from-primary-500/20 to-primary-600/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                 <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,7 +183,7 @@ export function renderNavbar(root) {
               </div>
             </div>
           </a>
-          <a href="#orders" class="navbar-link group ${currentPage === 'orders.html' ? 'bg-accent-cyan/20 text-accent-cyan border-r-4 border-accent-cyan' : ''}">
+          <a href="#orders" class="navbar-link nav-link group ${currentPage === 'orders.html' ? 'bg-accent-cyan/20 text-accent-cyan border-r-4 border-accent-cyan' : ''}">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-gradient-to-br from-accent-cyan/20 to-accent-cyan/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                 <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +196,7 @@ export function renderNavbar(root) {
               </div>
             </div>
           </a>
-          <a href="#clients" class="navbar-link group ${currentPage === 'clients.html' ? 'bg-accent-amber/20 text-accent-amber border-r-4 border-accent-amber' : ''}">
+          <a href="#clients" class="navbar-link nav-link group ${currentPage === 'clients.html' ? 'bg-accent-amber/20 text-accent-amber border-r-4 border-accent-amber' : ''}">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-gradient-to-br from-accent-amber/20 to-accent-amber/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                 <svg class="w-4 h-4 text-accent-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,7 +209,7 @@ export function renderNavbar(root) {
               </div>
             </div>
           </a>
-          <a href="#chalets" class="navbar-link group ${currentPage === 'chalets.html' ? 'bg-accent-purple/20 text-accent-purple border-r-4 border-accent-purple' : ''}">
+          <a href="#chalets" class="navbar-link nav-link group ${currentPage === 'chalets.html' ? 'bg-accent-purple/20 text-accent-purple border-r-4 border-accent-purple' : ''}">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-gradient-to-br from-accent-purple/20 to-accent-purple/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                 <svg class="w-4 h-4 text-accent-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,7 +222,7 @@ export function renderNavbar(root) {
               </div>
             </div>
           </a>
-          <a href="#analytics" class="navbar-link group ${currentPage === 'analytics.html' ? 'bg-accent-emerald/20 text-accent-emerald border-r-4 border-accent-emerald' : ''}">
+          <a href="#analytics" class="navbar-link nav-link group ${currentPage === 'analytics.html' ? 'bg-accent-emerald/20 text-accent-emerald border-r-4 border-accent-emerald' : ''}">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-gradient-to-br from-accent-emerald/20 to-accent-emerald/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                 <svg class="w-4 h-4 text-accent-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,7 +235,7 @@ export function renderNavbar(root) {
               </div>
             </div>
           </a>
-          <a href="settings.html" class="navbar-link group ${currentPage === 'settings.html' ? 'bg-slate-500/20 text-slate-400 border-r-4 border-slate-400' : ''}">
+          <a href="settings.html" class="navbar-link nav-link group ${currentPage === 'settings.html' ? 'bg-slate-500/20 text-slate-400 border-r-4 border-slate-400' : ''}">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-gradient-to-br from-slate-500/20 to-slate-600/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
