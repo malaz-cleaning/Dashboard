@@ -3,6 +3,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  onAuthStateChanged,
 } from 'firebase/auth';
 
 const ALLOWED_EMAILS = new Set([
@@ -45,6 +46,22 @@ async function firebaseSignIn(email, password) {
   } catch (error) {
     return { error: { message: error.message } };
   }
+}
+
+export async function initAuthState() {
+  const auth = await getAuth();
+  return new Promise((resolve) => {
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Update token in localStorage
+        const token = await user.getIdToken();
+        localStorage.setItem('authToken', token);
+      } else {
+        localStorage.removeItem('authToken');
+      }
+      resolve();
+    });
+  });
 }
 
 export const auth = {

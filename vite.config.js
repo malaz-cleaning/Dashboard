@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import fs from 'fs';
 
 export default defineConfig({
   base: '/Dashboard/',
@@ -24,4 +25,18 @@ export default defineConfig({
   define: {
     __DEV__: JSON.stringify(true),
   },
+  plugins: [
+    {
+      name: 'copy-sw',
+      apply: 'build',
+      generateBundle() {
+        const swContent = fs.readFileSync(resolve(__dirname, 'sw.js'), 'utf-8');
+        this.emitFile({
+          type: 'asset',
+          fileName: 'sw.js',
+          source: swContent,
+        });
+      },
+    },
+  ],
 });

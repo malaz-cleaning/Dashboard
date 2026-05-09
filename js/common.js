@@ -1,5 +1,5 @@
 import { renderNavbar } from './components/navbar.js';
-import { auth } from './auth.js';
+import { auth, initAuthState } from './auth.js';
 
 const navbarRoot = document.getElementById('navbar');
 
@@ -30,7 +30,8 @@ export function hideLoading() {
 }
 
 // Check authentication
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initAuthState();
   if (!auth.isAuthenticated() && !window.location.pathname.includes('login.html')) {
     window.location.href = 'login.html';
   }
@@ -57,17 +58,4 @@ function getCurrentPage() {
   return page === '' ? 'index.html' : page;
 }
 
-function updateActiveLink() {
-  const currentPage = getCurrentPage();
-  document.querySelectorAll('.navbar-link').forEach((link) => {
-    const href = link.getAttribute('href');
-    if (!href) {
-      link.classList.remove('active');
-      return;
-    }
-    const linkPage = href.substring(href.lastIndexOf('/') + 1);
-    link.classList.toggle('active', linkPage === currentPage);
-  });
-}
 
-updateActiveLink();
