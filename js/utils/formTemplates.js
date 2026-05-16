@@ -2,7 +2,7 @@
  * Reusable form templates for clients, chalets, and orders
  */
 
-import { createTextInput, createPhoneInput, createNumberInput, createSelect, createSelectWithAdd, createTextarea, createFormGrid, createFormActions, createForm } from './formBuilder.js';
+import { createTextInput, createPhoneInput, createNumberInput, createSelect, createSelectWithAdd, createTextarea, createFormGrid, createFormActions, createForm, createDateInput } from './formBuilder.js';
 
 export const CLIENT_TYPES = [
   { value: 'owner', label: 'owner' },
@@ -51,24 +51,28 @@ export function getOrderFormFields(clients = [], chalets = [], existingData = {}
       createSelect('order-status', 'الحالة', statusOptions, existingData.status || 'pending') +
         createNumberInput('order-price', 'السعر', 'مثلاً 420', existingData.price || '')
     ),
+    createFormGrid('grid-cols-1 md:grid-cols-2',
+      createDateInput('order-scheduled', 'تاريخ التنفيذ', existingData.scheduled_at || '') +
+        createNumberInput('order-deposit', 'الديبوزيت', 'مثلاً 100', existingData.deposit || '')
+    ),
     createTextarea('order-notes', 'الملاحظات', 'تفاصيل إضافية', 3, existingData.notes || ''),
   ];
 }
 
-export function createClientForm(clients = []) {
-  const fields = createClientFormFields();
+export function createClientForm(existingData = {}) {
+  const fields = createClientFormFields(existingData);
   const actions = [{ id: 'save-client-button', label: 'حفظ العميل' }];
   return createForm(fields, actions);
 }
 
-export function createChaletForm(clients = []) {
-  const fields = getChaletFormFields(clients);
+export function createChaletForm(clients = [], existingData = {}) {
+  const fields = getChaletFormFields(clients, existingData);
   const actions = [{ id: 'save-chalet-button', label: 'حفظ الشاليه' }];
   return createForm(fields, actions);
 }
 
-export function createOrderForm(clients = [], chalets = []) {
-  const fields = getOrderFormFields(clients, chalets);
+export function createOrderForm(clients = [], chalets = [], existingData = {}) {
+  const fields = getOrderFormFields(clients, chalets, existingData);
   const actions = [{ id: 'save-order-button', label: 'حفظ الطلب' }];
   return createForm(fields, actions);
 }

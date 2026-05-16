@@ -12,7 +12,7 @@ async function openClientModal(onClientAdded) {
 function renderClientRows(filtered, orders, chalets) {
   if (!filtered.length) {
     return `
-      <tr class="hidden md:table-row">
+      <tr class="table-row">
         <td colspan="8" class="px-6 py-12 text-center text-slate-400">لا يوجد عملاء مطابقين.</td>
       </tr>
       <div class="md:hidden p-8 text-center text-slate-400">لا يوجد عملاء مطابقين.</div>
@@ -24,7 +24,7 @@ function renderClientRows(filtered, orders, chalets) {
       const clientOrders = orders.filter((order) => order.client_id === client.client_id);
       const clientChalets = chalets.filter((item) => item.client_id === client.client_id);
       return `
-        <tr class="hidden md:table-row hover:bg-slate-700/40">
+        <tr class="hover:bg-slate-700/40">
           <td class="px-6 py-4 text-slate-200">${client.client_id}</td>
           <td class="px-6 py-4 text-slate-200">${client.name}</td>
           <td class="px-6 py-4 text-slate-200">${client.phone}</td>
@@ -33,7 +33,10 @@ function renderClientRows(filtered, orders, chalets) {
           <td class="px-6 py-4 text-slate-200">${clientOrders.length}</td>
           <td class="px-6 py-4 text-slate-200">${client.created_at}</td>
           <td class="px-6 py-4">
-            <button class="btn btn-secondary w-full" data-action="delete" data-id="${client.client_id}">حذف</button>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost px-3 py-2" data-action="edit" data-id="${client.client_id}">تعديل</button>
+              <button class="btn btn-secondary px-3 py-2" data-action="delete" data-id="${client.client_id}">حذف</button>
+            </div>
           </td>
         </tr>
       `;
@@ -51,7 +54,10 @@ function renderClientRows(filtered, orders, chalets) {
               <p class="text-xs text-slate-400">رقم العميل</p>
               <p class="font-semibold text-slate-50">${client.client_id}</p>
             </div>
-            <button class="btn btn-secondary" data-action="delete" data-id="${client.client_id}">حذف</button>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" data-action="edit" data-id="${client.client_id}">تعديل</button>
+              <button class="btn btn-secondary" data-action="delete" data-id="${client.client_id}">حذف</button>
+            </div>
           </div>
           <div class="space-y-3 text-sm text-slate-300">
             <div class="flex justify-between">
@@ -94,7 +100,7 @@ export async function renderClients() {
   const [clients, orders, chalets] = await Promise.all([api.getClients(), api.getOrders(), api.getChalets()]);
 
   pageRoot.innerHTML = `
-    <div class="p-6 max-w-7xl mx-auto">
+    <div class="p-6 max-w-[1200px] mx-auto px-4">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div>
           <h1 class="text-3xl font-bold text-slate-50">العملاء</h1>
@@ -122,7 +128,7 @@ export async function renderClients() {
 
       <div class="bg-slate-800 rounded-3xl border border-slate-700 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="hidden md:table min-w-full text-sm text-left">
+          <table class="hidden md:table min-w-full table-auto text-sm text-left">
             <thead class="bg-slate-900 border-b border-slate-700">
               <tr>
                 <th class="px-6 py-3 text-slate-400">رقم العميل</th>
@@ -168,12 +174,22 @@ export async function renderClients() {
 
   document.getElementById('open-client-modal')?.addEventListener('click', () => openClientModal(renderClients));
   pageRoot.addEventListener('click', async (event) => {
-    const button = event.target.closest('button[data-action="delete"]');
+    const button = event.target.closest('button[data-action]');
     if (!button) return;
+    const action = button.dataset.action;
     const clientId = button.dataset.id;
-    await api.deleteClient(clientId);
-    showToast('success', 'تم حذف العميل بنجاح');
-    renderClients();
+    if (action === 'delete') {
+      await api.deleteClient(clientId);
+      showToast('success', 'تم حذف العميل بنجاح');
+      renderClients();
+      return;
+    }
+    if (action === 'edit') {
+      const existing = clients.find((c) => c.client_id === clientId);
+      if (!existing) return;
+      await showClientModal(renderClients, existing);
+      return;
+    }
   });
 
   searchInput?.addEventListener('input', updateTable);

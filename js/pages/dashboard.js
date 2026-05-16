@@ -2,6 +2,7 @@ import { api } from '../api.js';
 import { renderModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 import { auth } from '../auth.js';
+import { showOrderModal } from '../utils/reusableModals.js';
 import * as XLSX from 'xlsx';
 
 const pageRoot = document.getElementById('page-content');
@@ -254,22 +255,28 @@ function buildChartData(orders) {
   return statusLabels.map((key) => ({ label: getStatusLabel(key), value: statusCounts[key] || 0 }));
 }
 
-function renderDashboardCards(clients, chalets, orders) {
+function renderDashboardCards(clients, chalets, orders, transactions = []) {
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.price || 0), 0);
-  return `<div class="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 mb-6 sm:mb-8">
-    ${renderStatsCard('عدد العملاء', clients.length,
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>',
-      'from-accent-cyan to-accent-cyan/80')}
-    ${renderStatsCard('عدد الشاليهات', chalets.length,
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',
-      'from-accent-purple to-accent-purple/80')}
-    ${renderStatsCard('عدد الطلبات', orders.length,
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>',
-      'from-accent-amber to-accent-amber/80')}
-    ${renderStatsCard('الإيراد الكلي', 'EGP ' + totalRevenue.toLocaleString('ar-EG'),
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>',
-      'from-accent-emerald to-accent-emerald/80')}
-  </div>`;
+  const totalNetProfit = transactions.filter((t) => !t.is_deleted).reduce((sum, t) => sum + (t.type === 'income' ? Number(t.amount || 0) : -Number(t.amount || 0)), 0);
+  return `
+    <div class="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 mb-6 sm:mb-8">
+      ${renderStatsCard('عدد العملاء', clients.length,
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>',
+        'from-accent-cyan to-accent-cyan/80')}
+      ${renderStatsCard('عدد الشاليهات', chalets.length,
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',
+        'from-accent-purple to-accent-purple/80')}
+      ${renderStatsCard('عدد الطلبات', orders.length,
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>',
+        'from-accent-amber to-accent-amber/80')}
+      ${renderStatsCard('الإيراد الكلي', 'EGP ' + totalRevenue.toLocaleString('ar-EG'),
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>',
+        'from-accent-emerald to-accent-emerald/80')}
+      ${renderStatsCard('صافي الربح الكلي', formatCurrency(totalNetProfit),
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+        'from-accent-emerald to-accent-emerald/80')}
+    </div>
+  `;
 }
 
 function renderQuickActions() {
@@ -327,156 +334,14 @@ async function renderAddOrderModal(selectedClientId = '', selectedChaletId = '')
     console.error('Modal root not available for add order modal');
     return;
   }
+
   const clients = await api.getClients();
   const chalets = await api.getChalets();
-  const activeClientId = selectedClientId || clients[0]?.client_id || '';
 
-  const clientOptions = clients
-    .map((client) => '<option value="' + client.client_id + '"' + (client.client_id === activeClientId ? ' selected' : '') + '>' + client.name + ' (' + client.type + ')</option>')
-    .join('');
-
-  const chaletOptions = chalets
-    .filter((chalet) => chalet.client_id === activeClientId)
-    .map((chalet) => '<option value="' + chalet.chalet_id + '"' + (chalet.chalet_id === selectedChaletId ? ' selected' : '') + '>' + chalet.chalet_name + '</option>')
-    .join('');
-
-  const content = '<div class="space-y-4">' +
-    '<div>' +
-      '<label class="form-label" for="order-client">العميل</label>' +
-      '<div class="flex flex-col sm:flex-row gap-3 items-start sm:items-end">' +
-        '<select id="order-client" class="form-select flex-1">' + clientOptions + '</select>' +
-        '<button type="button" class="btn btn-secondary px-3 py-2 sm:px-4 w-full sm:w-auto" id="add-client-button">+ عميل</button>' +
-      '</div>' +
-    '</div>' +
-    '<div>' +
-      '<label class="form-label" for="order-chalet">الشاليه</label>' +
-      '<div class="flex flex-col sm:flex-row gap-3 items-start sm:items-end">' +
-        '<select id="order-chalet" class="form-select flex-1">' + chaletOptions + '</select>' +
-        '<button type="button" class="btn btn-secondary px-3 py-2 sm:px-4 w-full sm:w-auto" id="add-chalet-button">+ شاليه</button>' +
-      '</div>' +
-    '</div>' +
-    '<div class="grid gap-4 grid-cols-1 md:grid-cols-2">' +
-      '<div>' +
-        '<label class="form-label" for="order-status">الحالة</label>' +
-        '<select id="order-status" class="form-select">' +
-          '<option value="pending">معلقة</option>' +
-          '<option value="in_progress">قيد التنفيذ</option>' +
-          '<option value="done_unpaid">تمت ولم يُدفع</option>' +
-          '<option value="done_paid">تمت ودُفع</option>' +
-          '<option value="cancelled">ملغاة</option>' +
-        '</select>' +
-      '</div>' +
-      '<div>' +
-        '<label class="form-label" for="order-price">السعر</label>' +
-        '<input id="order-price" type="number" class="form-input" placeholder="مثلاً 420" />' +
-      '</div>' +
-    '</div>' +
-    '<div>' +
-      '<label class="form-label" for="order-notes">الملاحظات</label>' +
-      '<textarea id="order-notes" rows="4" class="form-textarea" placeholder="تفاصيل إضافية"></textarea>' +
-    '</div>' +
-    '<div class="grid gap-4 grid-cols-1 md:grid-cols-2 items-start md:items-end">' +
-      '<div>' +
-        '<label class="form-label" for="order-date">تاريخ الطلب</label>' +
-        '<input id="order-date" type="date" class="form-input" value="' + new Date().toISOString().split('T')[0] + '" />' +
-      '</div>' +
-      '<div class="flex justify-start md:justify-end">' +
-        '<button type="button" class="btn btn-primary w-full md:w-auto" id="save-order-button">حفظ الطلب</button>' +
-      '</div>' +
-    '</div>' +
-  '</div>';
-
-  renderModal(modalRoot, 'إضافة طلب جديد', content);
-
-  const clientSelect = modalRoot.querySelector('#order-client');
-  const chaletSelect = modalRoot.querySelector('#order-chalet');
-  const addClientButton = modalRoot.querySelector('#add-client-button');
-  const addChaletButton = modalRoot.querySelector('#add-chalet-button');
-  const saveOrderButton = modalRoot.querySelector('#save-order-button');
-  const statusSelect = modalRoot.querySelector('#order-status');
-  const priceInput = modalRoot.querySelector('#order-price');
-  const notesInput = modalRoot.querySelector('#order-notes');
-  const dateInput = modalRoot.querySelector('#order-date');
-
-  function refreshChalets() {
-    const currentClientId = clientSelect.value;
-    const filtered = chalets.filter((item) => item.client_id === currentClientId);
-    chaletSelect.innerHTML = filtered.length
-      ? filtered.map((item) => '<option value="' + item.chalet_id + '">' + item.chalet_name + '</option>').join('')
-      : '<option value="">لا يوجد شاليهات</option>';
-  }
-
-  clientSelect?.addEventListener('change', refreshChalets);
-
-  addClientButton?.addEventListener('click', () => {
-    const clientModalContent = `
-      <div class="space-y-4">
-        <div>
-          <label class="form-label" for="new-client-name">الاسم</label>
-          <input id="new-client-name" type="text" class="form-input" placeholder="اسم العميل" />
-        </div>
-        <div>
-          <label class="form-label" for="new-client-phone">الهاتف</label>
-          <input id="new-client-phone" type="tel" class="form-input" placeholder="رقم الهاتف" />
-        </div>
-        <div>
-          <label class="form-label" for="new-client-type">النوع</label>
-          <select id="new-client-type" class="form-select">
-            <option value="owner">owner</option>
-            <option value="broker">broker</option>
-          </select>
-        </div>
-      <div class="flex flex-col sm:flex-row gap-3 justify-end">
-        <button type="button" class="btn btn-primary w-full sm:w-auto" id="save-new-client-button">حفظ العميل</button>
-      </div>
-    </div>`;
-    renderModal(modalRoot, 'إضافة عميل جديد', clientModalContent);
-
-    const saveNewClientButton = modalRoot.querySelector('#save-new-client-button');
-    saveNewClientButton?.addEventListener('click', async () => {
-      const name = modalRoot.querySelector('#new-client-name')?.value.trim();
-      const phone = modalRoot.querySelector('#new-client-phone')?.value.trim();
-      const type = modalRoot.querySelector('#new-client-type')?.value;
-
-      if (!name || !phone || !type) {
-        showToast('error', 'الرجاء تعبئة جميع الحقول');
-        return;
-      }
-
-      const newClient = await api.addClient({ name, phone, type });
-      showToast('success', 'تم إضافة العميل بنجاح');
-      await renderAddOrderModal(newClient.client_id);
-    });
+  await showOrderModal(clients, chalets, async () => {
+    // Refresh dashboard after an order is added
+    renderDashboard();
   });
-
-  addChaletButton?.addEventListener('click', () => {
-    const chaletModalContent = '<div class="space-y-4">' +
-      '<div class="grid gap-4 grid-cols-1 md:grid-cols-2">' +
-        '<div>' +
-          '<label class="form-label" for="new-chalet-name">الشاليه</label>' +
-          '<input id="new-chalet-name" type="text" class="form-input" placeholder="اسم الشاليه" />' +
-        '</div>' +
-        '<div>' +
-          '<label class="form-label" for="new-chalet-location">الموقع</label>' +
-          '<input id="new-chalet-location" type="text" class="form-input" placeholder="الموقع" />' +
-        '</div>' +
-      '</div>' +
-      '<div>' +
-        '<label class="form-label" for="new-chalet-client">العميل</label>' +
-        '<select id="new-chalet-client" class="form-select">' +
-          clients.map((client) => '<option value="' + client.client_id + '">' + client.name + '</option>').join('') +
-        '</select>' +
-      '</div>' +
-      '<div>' +
-        '<label class="form-label" for="new-chalet-details">التفاصيل</label>' +
-        '<textarea id="new-chalet-details" rows="4" class="form-textarea" placeholder="تفاصيل الشاليه"></textarea>' +
-      '</div>' +
-      '<div class="flex flex-col sm:flex-row gap-3 justify-end">' +
-        '<button type="button" class="btn btn-primary w-full sm:w-auto" id="save-new-chalet-button">حفظ الشاليه</button>' +
-      '</div>' +
-    '</div>';
-
-    renderModal(modalRoot, 'إضافة شاليه جديد', chaletModalContent);
 
     const saveNewChaletButton = modalRoot.querySelector('#save-new-chalet-button');
     saveNewChaletButton?.addEventListener('click', async () => {
@@ -494,7 +359,6 @@ async function renderAddOrderModal(selectedClientId = '', selectedChaletId = '')
       showToast('success', 'تم إضافة الشاليه بنجاح');
       await renderAddOrderModal(clientId, newChalet.chalet_id);
     });
-  });
 
   saveOrderButton?.addEventListener('click', async () => {
     if (!clientSelect.value || !chaletSelect.value || !priceInput.value) {
@@ -566,6 +430,7 @@ export async function renderDashboard() {
     const clients = await api.getClients();
     const chalets = await api.getChalets();
     const orders = await api.getOrders();
+    const transactions = await api.getTransactions();
     const statusData = buildChartData(orders);
     const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'];
     const revenueByMonth = months.map((_, index) => orders
@@ -575,13 +440,13 @@ export async function renderDashboard() {
     const bestMonthIndex = revenueByMonth.indexOf(Math.max(...revenueByMonth));
     const bestMonth = months[bestMonthIndex] || 'غير متوفر';
 
-    pageRoot.innerHTML = '<div class="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">' +
+    pageRoot.innerHTML = '<div class="p-4 sm:p-6 max-w-[1200px] mx-auto px-4 space-y-4 sm:space-y-6">' +
       '<div>' +
         '<h1 class="text-2xl sm:text-3xl font-bold text-slate-50">Dash board</h1>' +
         '<p class="text-slate-400 mt-2 text-sm sm:text-base">ملخص سريع لإدارة الطلبات والعملاء.</p>' +
       '</div>' +
       renderQuickActions() +
-      renderDashboardCards(clients, chalets, orders) +
+      renderDashboardCards(clients, chalets, orders, transactions) +
       '<div class="grid gap-3 sm:gap-4 grid-cols-1 xl:grid-cols-2">' +
         renderStatusSummary(statusData) +
         renderRevenueSummary(revenueByMonth, bestMonth) +
@@ -590,7 +455,7 @@ export async function renderDashboard() {
     '</div>';
   } catch (error) {
     console.error('Error rendering dashboard:', error);
-    pageRoot.innerHTML = '<div class="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">' +
+    pageRoot.innerHTML = '<div class="p-4 sm:p-6 max-w-[1200px] mx-auto px-4 space-y-4 sm:space-y-6">' +
       '<div>' +
         '<h1 class="text-2xl sm:text-3xl font-bold text-slate-50">خطأ في تحميل البيانات</h1>' +
         '<p class="text-slate-400 mt-2 text-sm sm:text-base">حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.</p>' +

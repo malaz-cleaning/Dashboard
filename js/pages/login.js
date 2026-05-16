@@ -37,6 +37,7 @@ form.addEventListener('submit', async (e) => {
   try {
     const result = await auth.login(email, password);
     auth.setToken(result.idToken);
+    auth.updateUserData(email);
     showToast('success', 'تم تسجيل الدخول بنجاح');
     setTimeout(() => {
       window.location.href = 'index.html';

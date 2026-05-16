@@ -29,6 +29,15 @@ export function createNumberInput(id, label, placeholder = '', value = '') {
   `;
 }
 
+export function createDateInput(id, label, value = '') {
+  return `
+    <div>
+      <label class="form-label" for="${id}">${label}</label>
+      <input id="${id}" type="date" class="form-input" value="${value}" />
+    </div>
+  `;
+}
+
 export function createSelect(id, label, options, selectedValue = '') {
   const optionsHtml = options
     .map((opt) => {

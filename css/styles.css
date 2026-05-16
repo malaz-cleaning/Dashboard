@@ -44,6 +44,7 @@ html[data-theme='light'] .badge {
 html,
 body {
   min-width: 0;
+  width: 100%;
   overflow-x: hidden;
   scroll-behavior: smooth;
 }
@@ -70,11 +71,15 @@ textarea {
 }
 .app-shell {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 280px 1fr;
   min-height: 100vh;
   overflow-x: hidden;
   min-width: 0;
   position: relative;
+}
+/* When sidebar is open on mobile, prevent background scrolling via app-shell class */
+.app-shell.sidebar-open {
+  overflow: hidden;
 }
 .main-layout,
 .page-content {
@@ -85,6 +90,7 @@ textarea {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  grid-column: 2;
 }
 .navbar {
   padding: 14px 20px;
@@ -152,6 +158,43 @@ textarea {
 .main-layout {
   min-width: 0;
 }
+
+@media (min-width: 1280px) {
+  .page-content {
+    padding: 40px 44px;
+    max-width: 1400px;
+  }
+
+  .sidebar {
+    width: 300px;
+  }
+
+  .main-layout {
+    margin-inline-start: 300px;
+  }
+
+  /* On large screens keep sidebar fixed and out of document flow */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 40;
+    transform: none;
+    overflow-y: auto;
+  }
+
+  .page-content > * {
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 1000px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
 img,
 svg,
 iframe,
@@ -536,20 +579,23 @@ video {
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
   border-right: 1px solid rgba(148, 163, 184, 0.1);
   backdrop-filter: blur(16px);
-  position: fixed;
-  left: 0;
+  position: sticky;
   top: 0;
-  bottom: 0;
+  height: 100vh;
   width: 280px;
   z-index: 40;
-  transform: translateX(0);
+  overflow-y: auto;
+  transform: none;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: calc(12px + env(safe-area-inset-left));
+  padding-right: calc(12px + env(safe-area-inset-right));
 }
 .sidebar.collapsed {
-  transform: translateX(-100%);
 }
 .sidebar.open {
-  transform: translateX(0);
+  transform: none;
 }
 .sidebar-overlay {
   position: fixed;
@@ -560,6 +606,14 @@ video {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
+}
+
+/* RTL support: place sidebar on the right side when document direction is RTL */
+html[dir="rtl"] .sidebar {
+  right: 0;
+  left: auto;
+  border-left: 1px solid rgba(148, 163, 184, 0.1);
+  border-right: none;
 }
 .sidebar-link {
   display: flex;
@@ -637,7 +691,7 @@ video {
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 24px;
   padding: 32px;
-  max-width: 500px;
+  max-width: min(90vw, 500px);
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -682,10 +736,14 @@ video {
 .toast-root {
   position: fixed;
   top: 20px;
-  left: 20px;
   right: 20px;
+  left: auto;
   z-index: 60;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: calc(100vw - 40px);
 }
 .toast {
   background: rgba(15, 23, 42, 0.95);
@@ -701,6 +759,10 @@ video {
   align-items: center;
   gap: 12px;
 }
+
+/* toast animation helper classes used by JS */
+.toast.fade-in { animation: slideDown 0.3s ease-out; }
+.toast.slide-out { animation: slideUp 0.25s ease-in; }
 .toast.success {
   border-color: rgba(16, 185, 129, 0.3);
 }
@@ -1619,6 +1681,19 @@ body {
     transform: translateX(-120%);
     z-index: 45;
     box-shadow: 24px 0 80px rgba(0, 0, 0, 0.35);
+  }
+  html[dir="rtl"] .sidebar {
+    inset: 0 0 0 auto;
+    transform: translateX(120%);
+  }
+  .sidebar.collapsed {
+    transform: translateX(-120%);
+  }
+  html[dir="rtl"] .sidebar.collapsed {
+    transform: translateX(120%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
   }
   .sidebar-overlay {
     position: fixed;

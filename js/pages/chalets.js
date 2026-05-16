@@ -16,7 +16,7 @@ async function openChaletModal(clients, refresh) {
 function renderChaletRows(filtered, clients, orders) {
   if (!filtered.length) {
     return `
-      <tr class="hidden md:table-row">
+      <tr class="table-row">
         <td colspan="9" class="px-6 py-12 text-center text-slate-400">لا يوجد شاليهات مطابقة.</td>
       </tr>
       <div class="md:hidden p-8 text-center text-slate-400">لا يوجد شاليهات مطابقة.</div>
@@ -28,7 +28,7 @@ function renderChaletRows(filtered, clients, orders) {
       const client = clients.find((item) => item.client_id === chalet.client_id) || {};
       const chaletOrders = orders.filter((order) => order.chalet_id === chalet.chalet_id);
       return `
-        <tr class="hidden md:table-row hover:bg-slate-700/40">
+        <tr class="hover:bg-slate-700/40">
           <td class="px-6 py-4 text-slate-200">${chalet.chalet_id}</td>
           <td class="px-6 py-4 text-slate-200">${chalet.chalet_code}</td>
           <td class="px-6 py-4 text-slate-200">${chalet.chalet_name}</td>
@@ -38,7 +38,10 @@ function renderChaletRows(filtered, clients, orders) {
           <td class="px-6 py-4 text-slate-200">${chaletOrders.length}</td>
           <td class="px-6 py-4 text-slate-200">${chalet.created_at}</td>
           <td class="px-6 py-4">
-            <button class="btn btn-secondary w-full" data-action="delete" data-id="${chalet.chalet_id}">حذف</button>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost px-3 py-2" data-action="edit" data-id="${chalet.chalet_id}">تعديل</button>
+              <button class="btn btn-secondary px-3 py-2" data-action="delete" data-id="${chalet.chalet_id}">حذف</button>
+            </div>
           </td>
         </tr>
       `;
@@ -56,7 +59,10 @@ function renderChaletRows(filtered, clients, orders) {
               <p class="text-xs text-slate-400">رقم الشاليه</p>
               <p class="text-lg font-semibold text-slate-50">${chalet.chalet_id}</p>
             </div>
-            <button class="btn btn-secondary" data-action="delete" data-id="${chalet.chalet_id}">حذف</button>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" data-action="edit" data-id="${chalet.chalet_id}">تعديل</button>
+              <button class="btn btn-secondary" data-action="delete" data-id="${chalet.chalet_id}">حذف</button>
+            </div>
           </div>
           <div class="space-y-3 text-sm text-slate-300">
             <div class="flex justify-between">
@@ -100,7 +106,7 @@ export async function renderChalets() {
   const [chalets, clients, orders] = await Promise.all([api.getChalets(), api.getClients(), api.getOrders()]);
 
   pageRoot.innerHTML = `
-    <div class="p-6 max-w-7xl mx-auto">
+    <div class="p-6 max-w-[1200px] mx-auto px-4">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div>
           <h1 class="text-3xl font-bold text-slate-50">الشاليهات</h1>
@@ -127,7 +133,7 @@ export async function renderChalets() {
 
       <div class="bg-slate-800 rounded-3xl border border-slate-700 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="hidden md:table min-w-full text-sm text-left">
+          <table class="hidden md:table min-w-full table-auto text-sm text-left">
             <thead class="bg-slate-900 border-b border-slate-700">
               <tr>
                 <th class="px-6 py-3 text-slate-400">رقم الشاليه</th>
@@ -176,12 +182,22 @@ export async function renderChalets() {
 
   document.getElementById('open-chalet-modal')?.addEventListener('click', () => openChaletModal(clients, renderChalets));
   pageRoot.addEventListener('click', async (event) => {
-    const button = event.target.closest('button[data-action="delete"]');
+    const button = event.target.closest('button[data-action]');
     if (!button) return;
+    const action = button.dataset.action;
     const chaletId = button.dataset.id;
-    await api.deleteChalet(chaletId);
-    showToast('success', 'تم حذف الشاليه بنجاح');
-    renderChalets();
+    if (action === 'delete') {
+      await api.deleteChalet(chaletId);
+      showToast('success', 'تم حذف الشاليه بنجاح');
+      renderChalets();
+      return;
+    }
+    if (action === 'edit') {
+      const existing = chalets.find((c) => c.chalet_id === chaletId);
+      if (!existing) return;
+      await showChaletModal(clients, renderChalets, existing);
+      return;
+    }
   });
 
   searchInput?.addEventListener('input', updateTable);

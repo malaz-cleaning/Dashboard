@@ -38,12 +38,12 @@ function formatCurrency(value) {
   return `EGP ${Number(value || 0).toLocaleString('ar-EG')}`;
 }
 
-function renderOrderRows(orders, clients, chalets) {
+function renderOrderRows(orders, clients, chalets, transactions = []) {
   if (!orders.length) {
     return {
       tableRows: `
         <tr>
-          <td colspan="9" class="px-6 py-12 text-center text-slate-500">لا يوجد طلبات مطابقة.</td>
+          <td colspan="14" class="px-6 py-12 text-center text-slate-500">لا يوجد طلبات مطابقة.</td>
         </tr>
       `,
       mobileCards: `
@@ -57,15 +57,27 @@ function renderOrderRows(orders, clients, chalets) {
       const client = clients.find((item) => item.client_id === order.client_id) || {};
       const chalet = chalets.find((item) => item.chalet_id === order.chalet_id) || {};
       const completedAt = order.completed_at || ((['done_paid', 'done_unpaid', 'cancelled'].includes(order.status)) ? new Date().toISOString().split('T')[0] : '-');
+      const orderExpenses = transactions
+        .filter((t) => !t.is_deleted && t.order_id === order.order_id && t.type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const orderIncomeTransactions = transactions
+        .filter((t) => !t.is_deleted && t.order_id === order.order_id && t.type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const orderIncome = orderIncomeTransactions > 0 ? orderIncomeTransactions : Number(order.deposit || 0);
+      const netProfit = orderIncome - orderExpenses;
 
       return `
-        <tr class="hidden md:table-row hover:bg-slate-700/60">
+        <tr class="hover:bg-slate-700/60">
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-100">${order.order_id}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-100">${client.name || 'غير محدد'}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-100">${chalet.chalet_name || 'غير محدد'}</td>
           <td class="px-6 py-4 whitespace-nowrap">${statusBadge(order.status)}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-100">${formatCurrency(order.price)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-100">${formatCurrency(order.deposit)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-100">${formatCurrency(orderExpenses)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-100">${formatCurrency(netProfit)}</td>
           <td class="px-6 py-4 text-sm text-slate-400 max-w-xs truncate">${order.notes || '-'}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${order.scheduled_at || '-'}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${order.created_at}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${completedAt}</td>
           <td class="px-6 py-4 whitespace-nowrap">
@@ -78,7 +90,10 @@ function renderOrderRows(orders, clients, chalets) {
             </select>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <button type="button" class="inline-flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-3 py-2 text-sm transition hover:bg-red-500/20 hover:text-red-100" data-action="delete-order" data-order-id="${order.order_id}">حذف</button>
+            <div class="flex gap-2">
+              <button type="button" class="inline-flex items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/10 text-amber-300 px-3 py-2 text-sm transition hover:bg-amber-500/20 hover:text-amber-100" data-action="edit-order" data-order-id="${order.order_id}">تعديل</button>
+              <button type="button" class="inline-flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-3 py-2 text-sm transition hover:bg-red-500/20 hover:text-red-100" data-action="delete-order" data-order-id="${order.order_id}">حذف</button>
+            </div>
           </td>
         </tr>
       `;
@@ -90,6 +105,14 @@ function renderOrderRows(orders, clients, chalets) {
       const client = clients.find((item) => item.client_id === order.client_id) || {};
       const chalet = chalets.find((item) => item.chalet_id === order.chalet_id) || {};
       const completedAt = order.completed_at || ((['done_paid', 'done_unpaid', 'cancelled'].includes(order.status)) ? new Date().toISOString().split('T')[0] : '-');
+      const orderExpenses = transactions
+        .filter((t) => !t.is_deleted && t.order_id === order.order_id && t.type === 'expense')
+        .reduce((s, t) => s + Number(t.amount || 0), 0);
+      const orderIncomeTransactions = transactions
+        .filter((t) => !t.is_deleted && t.order_id === order.order_id && t.type === 'income')
+        .reduce((s, t) => s + Number(t.amount || 0), 0);
+      const orderIncome = orderIncomeTransactions > 0 ? orderIncomeTransactions : Number(order.deposit || 0);
+      const netProfit = orderIncome - orderExpenses;
 
       return `
         <div class="md:hidden bg-slate-800 rounded-3xl border border-slate-700 p-4 mb-4">
@@ -100,14 +123,30 @@ function renderOrderRows(orders, clients, chalets) {
             </div>
             ${statusBadge(order.status)}
           </div>
-          <div class="space-y-2 mb-4">
+            <div class="space-y-2 mb-4">
             <div class="flex justify-between items-center">
               <span class="text-sm text-slate-400">السعر:</span>
               <span class="text-lg font-semibold text-slate-50">${formatCurrency(order.price)}</span>
             </div>
             <div class="flex justify-between items-center">
+              <span class="text-sm text-slate-400">الدفعة:</span>
+              <span class="text-sm text-slate-50">${formatCurrency(order.deposit)}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-slate-400">المصروفات:</span>
+              <span class="text-sm text-slate-50">${formatCurrency(orderExpenses)}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-slate-400">صافي الربح:</span>
+              <span class="text-sm text-slate-50">${formatCurrency(netProfit)}</span>
+            </div>
+            <div class="flex justify-between items-center">
               <span class="text-sm text-slate-400">تاريخ الإنشاء:</span>
               <span class="text-sm text-slate-50">${order.created_at}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-slate-400">تاريخ التنفيذ:</span>
+              <span class="text-sm text-slate-50">${order.scheduled_at || '-'}</span>
             </div>
             <div class="flex justify-between items-center">
               <span class="text-sm text-slate-400">تاريخ الإنجاز:</span>
@@ -198,16 +237,18 @@ export async function renderOrders() {
   }
   if (!pageRoot) return;
   const [orders, clients, chalets] = await Promise.all([api.getOrders(), api.getClients(), api.getChalets()]);
+  const transactions = await api.getTransactions();
 
   const totals = {
     orders: orders.length,
     clients: clients.length,
     chalets: chalets.length,
-    revenue: orders.reduce((sum, order) => sum + Number(order.price || 0), 0),
+    revenue: transactions.filter((t) => t.type === 'income').reduce((sum, t) => sum + Number(t.amount || 0), 0),
+    totalNetProfit: transactions.filter((t) => !t.is_deleted).reduce((sum, t) => sum + (t.type === 'income' ? Number(t.amount || 0) : -Number(t.amount || 0)), 0),
   };
 
   pageRoot.innerHTML = `
-    <div class="p-6 max-w-7xl mx-auto space-y-6">
+    <div class="p-6 max-w-[1200px] mx-auto px-4 space-y-6">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold text-slate-50">الطلبات</h1>
@@ -232,6 +273,10 @@ export async function renderOrders() {
         <div class="card card-padded">
           <p class="text-sm text-slate-400">إجمالي الإيراد</p>
           <p class="mt-3 text-3xl font-semibold text-slate-50">${formatCurrency(totals.revenue)}</p>
+        </div>
+        <div class="card card-padded">
+          <p class="text-sm text-slate-400">صافي الربح الكلي</p>
+          <p class="mt-3 text-3xl font-semibold text-slate-50">${formatCurrency(totals.totalNetProfit)}</p>
         </div>
       </div>
 
@@ -264,7 +309,7 @@ export async function renderOrders() {
 
       <div class="bg-slate-900 rounded-3xl shadow-card border border-slate-700 overflow-hidden mb-6">
         <div class="overflow-x-auto">
-          <table class="hidden md:table min-w-full divide-y divide-slate-700">
+          <table class="hidden md:table min-w-full table-auto divide-y divide-slate-700">
             <thead class="bg-slate-800">
               <tr>
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">رقم الطلب</th>
@@ -272,11 +317,15 @@ export async function renderOrders() {
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">الشاليه</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">الحالة</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">السعر</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">الدفعة</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">المصروفات</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">صافي الربح</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">ملاحظات</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">تاريخ التنفيذ</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">تاريخ الإنشاء</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">تاريخ الإنجاز</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">تغيير الحالة</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">حذف</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">تعديل / حذف</th>
               </tr>
             </thead>
             <tbody id="orders-table-body" class="bg-slate-900 divide-y divide-slate-700"></tbody>
@@ -355,7 +404,7 @@ export async function renderOrders() {
       client: clientSelect.value,
     };
     const filtered = filterOrders(orders, clients, filters);
-    const { tableRows, mobileCards } = renderOrderRows(filtered, clients, chalets);
+    const { tableRows, mobileCards } = renderOrderRows(filtered, clients, chalets, transactions);
 
     tableBody.innerHTML = tableRows;
     mobileBody.innerHTML = mobileCards;
@@ -387,14 +436,25 @@ export async function renderOrders() {
     openOrderModal(clients, chalets, renderOrders);
   });
 
-  pageRoot.dataset.ordersEventsBound = pageRoot.dataset.ordersEventsBound || '';
+    pageRoot.dataset.ordersEventsBound = pageRoot.dataset.ordersEventsBound || '';
   if (!pageRoot.dataset.ordersEventsBound) {
     document.addEventListener('click', async (event) => {
       const deleteBtn = event.target.closest('button[data-action="delete-order"]');
-      if (!deleteBtn) return;
-      const orderId = deleteBtn.dataset.orderId;
-      if (!orderId) return;
-      await confirmDeleteOrder(orderId, renderOrders);
+      if (deleteBtn) {
+        const orderId = deleteBtn.dataset.orderId;
+        if (orderId) await confirmDeleteOrder(orderId, renderOrders);
+        return;
+      }
+
+      const editBtn = event.target.closest('button[data-action="edit-order"]');
+      if (editBtn) {
+        const orderId = editBtn.dataset.orderId;
+        if (!orderId) return;
+        const existingOrder = orders.find(o => o.order_id === orderId);
+        if (!existingOrder) return;
+        await showOrderModal(clients, chalets, renderOrders, existingOrder);
+        return;
+      }
     });
 
     document.addEventListener('change', async (event) => {

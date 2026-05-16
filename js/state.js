@@ -16,10 +16,10 @@ export function initializeState() {
     { chalet_id: 'CH003', chalet_code: 'CH003', client_id: 'CL003', chalet_name: 'فيلا الوادي', location: 'الخبر', details: 'فيلا كبيرة 5 غرف', created_at: '2026-03-18', is_deleted: false },
   ];
   state.orders = [
-    { order_id: 'OR001', client_id: 'CL001', chalet_id: 'CH001', status: 'pending', price: 420, notes: 'تنظيف شامل', created_at: '2026-05-07', completed_at: '', is_deleted: false },
-    { order_id: 'OR002', client_id: 'CL002', chalet_id: 'CH002', status: 'in_progress', price: 600, notes: 'تنظيف بعد احتفال', created_at: '2026-05-03', completed_at: '', is_deleted: false },
-    { order_id: 'OR003', client_id: 'CL003', chalet_id: 'CH003', status: 'done_paid', price: 1250, notes: 'تنظيف شامل مع تعقيم', created_at: '2026-04-30', completed_at: '2026-04-30', is_deleted: false },
-    { order_id: 'OR004', client_id: 'CL001', chalet_id: 'CH001', status: 'done_unpaid', price: 320, notes: 'تنظيف سريع', created_at: '2026-04-18', completed_at: '2026-04-18', is_deleted: false },
-    { order_id: 'OR005', client_id: 'CL002', chalet_id: 'CH002', status: 'cancelled', price: 0, notes: 'تم إلغاء الطلب', created_at: '2026-05-01', completed_at: '', is_deleted: false },
+    { order_id: 'OR001', client_id: 'CL001', chalet_id: 'CH001', status: 'pending', price: 420, notes: 'تنظيف شامل', created_at: '2026-05-07', scheduled_at: '', deposit: 0, created_by: 'admin', completed_at: '', is_deleted: false },
+    { order_id: 'OR002', client_id: 'CL002', chalet_id: 'CH002', status: 'in_progress', price: 600, notes: 'تنظيف بعد احتفال', created_at: '2026-05-03', scheduled_at: '', deposit: 0, created_by: 'admin', completed_at: '', is_deleted: false },
+    { order_id: 'OR003', client_id: 'CL003', chalet_id: 'CH003', status: 'done_paid', price: 1250, notes: 'تنظيف شامل مع تعقيم', created_at: '2026-04-30', scheduled_at: '2026-04-30', deposit: 0, created_by: 'admin', completed_at: '2026-04-30', is_deleted: false },
+    { order_id: 'OR004', client_id: 'CL001', chalet_id: 'CH001', status: 'done_unpaid', price: 320, notes: 'تنظيف سريع', created_at: '2026-04-18', scheduled_at: '2026-04-18', deposit: 0, created_by: 'admin', completed_at: '2026-04-18', is_deleted: false },
+    { order_id: 'OR005', client_id: 'CL002', chalet_id: 'CH002', status: 'cancelled', price: 0, notes: 'تم إلغاء الطلب', created_at: '2026-05-01', scheduled_at: '', deposit: 0, created_by: 'admin', completed_at: '', is_deleted: false },
   ];
 };

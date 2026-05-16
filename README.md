@@ -55,7 +55,6 @@ npx live-server --port=8080 --open=login.html
 ## الحسابات المسموح بها
 
 التطبيق يدعم الحسابات التالية فقط:
-- admin@malaz.com
 - ayman@malaz.com
 - abdo@malaz.com
 - yousef@malaz.com

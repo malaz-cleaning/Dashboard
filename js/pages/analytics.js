@@ -98,7 +98,7 @@ export async function renderAnalytics() {
   const statusColors = statusLabels.map((status) => STATUS_MAP[status].color);
 
   pageRoot.innerHTML = `
-    <div class="p-4 md:p-6 max-w-full mx-auto space-y-6 min-w-0">
+    <div class="p-4 md:p-6 max-w-[1200px] mx-auto px-4 space-y-6 min-w-0">
       <!-- Header -->
       <div class="flex flex-col gap-2 md:gap-4">
         <h1 class="text-2xl md:text-4xl font-bold text-slate-50">التحليلات</h1>
@@ -122,8 +122,10 @@ export async function renderAnalytics() {
               <h2 class="text-lg md:text-xl font-semibold text-slate-50">اتجاه الإيرادات</h2>
               <p class="text-xs md:text-sm text-slate-400 mt-1">عرض الإيراد الشهري للأشهر الأخيرة</p>
             </div>
-            <div class="mt-4 md:mt-6 flex-1 min-h-[280px] md:min-h-[350px]">
-              <canvas id="revenue-chart" aria-label="Revenue chart"></canvas>
+            <div class="mt-4 md:mt-6 flex-1 min-h-[280px] md:min-h-[350px] w-full">
+              <div class="w-full overflow-x-auto">
+                <canvas id="revenue-chart" aria-label="Revenue chart"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -135,8 +137,10 @@ export async function renderAnalytics() {
               <h2 class="text-lg md:text-xl font-semibold text-slate-50">حالات الطلبات</h2>
               <p class="text-xs md:text-sm text-slate-400 mt-1">توزيع الطلبات</p>
             </div>
-            <div class="mt-4 md:mt-6 flex-1 min-h-[280px] md:min-h-[350px]">
-              <canvas id="status-chart" aria-label="Status distribution chart"></canvas>
+            <div class="mt-4 md:mt-6 flex-1 min-h-[280px] md:min-h-[350px] w-full">
+              <div class="w-full overflow-x-auto">
+                <canvas id="status-chart" aria-label="Status distribution chart"></canvas>
+              </div>
             </div>
             <div class="mt-4 md:mt-6 space-y-2">
               ${statusLabels

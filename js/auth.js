@@ -111,12 +111,35 @@ export const auth = {
     return localStorage.getItem('authToken');
   },
 
+  getUserEmail() {
+    return localStorage.getItem('userEmail') || '';
+  },
+
+  getUserName() {
+    const email = this.getUserEmail();
+    if (email) {
+      return email.split('@')[0];
+    }
+    // Fallback for users who logged in before this feature
+    if (this.isAuthenticated()) {
+      return 'المدير';
+    }
+    return 'مستخدم';
+  },
+
+  updateUserData(email) {
+    if (email) {
+      localStorage.setItem('userEmail', email.trim().toLowerCase());
+    }
+  },
+
   isAuthenticated() {
     return !!this.getToken();
   },
 
   async logout() {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
     try {
       const { signOut } = await getFirebaseAuthMethods();
       const auth = await getAuth();
