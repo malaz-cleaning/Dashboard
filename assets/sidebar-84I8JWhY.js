@@ -12,7 +12,7 @@ import{a as m}from"./auth-CC3zXfFT.js";const T={clients:[],chalets:[],orders:[]}
         </div>
       </div>
     </div>
-  `;const t=e.querySelector("#sidebar-toggle");t==null||t.addEventListener("click",()=>{var n;(n=window.toggleSidebar)==null||n.call(window,!0)})}function M(e){if(!e)return;const t=window.innerWidth<1024;m.isAuthenticated()&&!m.getUserEmail()&&m.updateUserData("admin@malaz.com"),e.classList.add("sidebar"),e.classList.toggle("collapsed",t),e.innerHTML=`
+  `;const t=e.querySelector("#sidebar-toggle");t==null||t.addEventListener("click",()=>{var n;(n=window.toggleSidebar)==null||n.call(window,!0)})}function M(e){if(!e)return;const t=window.innerWidth<=1024;m.isAuthenticated()&&!m.getUserEmail()&&m.updateUserData("admin@malaz.com"),e.classList.add("sidebar"),e.classList.toggle("collapsed",t),e.innerHTML=`
       <!-- Brand Block -->
       <div class="flex flex-col lg:flex-row items-start lg:items-center gap-3 lg:gap-4 p-4 lg:p-6 border-b border-slate-700/50">
         <div class="relative">

@@ -1,4 +1,4 @@
-import{a as h}from"./auth-CC3zXfFT.js";/* empty css               */import"./main-CZdBdtSK.js";import"./common-BqO74Arb.js";import{a as r}from"./sidebar-B32eMct9.js";import{s as u}from"./toast-ZwFb22xq.js";import{c as x}from"./reusableModals-UISrxHlU.js";const p=document.getElementById("page-content");function b(e){return"EGP "+Number(e||0).toLocaleString("ar-EG")}function y(e,d,n){return e.length?`
+import{a as h}from"./auth-CC3zXfFT.js";/* empty css               */import"./main-CZdBdtSK.js";import"./common-B6Mb1_rC.js";import{a as r}from"./sidebar-84I8JWhY.js";import{s as u}from"./toast-ZwFb22xq.js";import{c as x}from"./reusableModals-BBjcAGCf.js";const p=document.getElementById("page-content");function b(e){return"EGP "+Number(e||0).toLocaleString("ar-EG")}function y(e,d,n){return e.length?`
     <div class="card-padded">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-semibold text-slate-50">المعاملات المالية</h2>
