@@ -1,0 +1,53 @@
+import{a as y}from"./sidebar-B32eMct9.js";import{s as u}from"./toast-ZwFb22xq.js";import{a as O}from"./auth-CC3zXfFT.js";function w(e,t,n){if(!e)return;e.innerHTML=`
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-slate-800 rounded-lg shadow-xl w-full max-h-[90vh] overflow-hidden" style="max-width: min(90vw, 500px);">
+        <div class="flex items-center justify-between p-6 border-b border-slate-700">
+          <h2 class="text-xl font-semibold text-white">${t}</h2>
+          <button class="text-slate-400 hover:text-white text-2xl leading-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800 rounded" aria-label="Close">×</button>
+        </div>
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">${n}</div>
+      </div>
+    </div>
+  `;const r=e.querySelector(".fixed"),l=e.querySelector('button[aria-label="Close"]');function c(){e.innerHTML=""}r==null||r.addEventListener("click",s=>{s.target===r&&c()}),l==null||l.addEventListener("click",c)}function $(e,t,n="",r=""){return`
+    <div>
+      <label class="form-label" for="${e}">${t}</label>
+      <input id="${e}" type="text" class="form-input" placeholder="${n}" value="${r}" />
+    </div>
+  `}function g(e,t,n="",r=""){return`
+    <div>
+      <label class="form-label" for="${e}">${t}</label>
+      <input id="${e}" type="tel" class="form-input" placeholder="${n}" value="${r}" />
+    </div>
+  `}function F(e,t,n="",r=""){return`
+    <div>
+      <label class="form-label" for="${e}">${t}</label>
+      <input id="${e}" type="number" class="form-input" placeholder="${n}" value="${r}" />
+    </div>
+  `}function x(e,t,n=""){return`
+    <div>
+      <label class="form-label" for="${e}">${t}</label>
+      <input id="${e}" type="date" class="form-input" value="${n}" />
+    </div>
+  `}function M(e,t,n,r=""){const l=n.map(c=>{const s=c.value===r?"selected":"";return`<option value="${c.value}" ${s}>${c.label}</option>`}).join("");return`
+    <div>
+      <label class="form-label" for="${e}">${t}</label>
+      <select id="${e}" class="form-select">
+        ${l}
+      </select>
+    </div>
+  `}function _(e,t,n,r="",l="",c=""){const s=n.map(i=>{const o=i.value===r?"selected":"";return`<option value="${i.value}" ${o}>${i.label}</option>`}).join("");return`
+    <div>
+      <label class="form-label" for="${e}">${t}</label>
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap items-end">
+        <select id="${e}" class="form-select flex-1">
+          ${s}
+        </select>
+        ${c?`<button type="button" class="btn btn-secondary px-4 py-2 whitespace-nowrap" id="${l}">${c}</button>`:""}
+      </div>
+    </div>
+  `}function j(e,t,n="",r=3,l=""){return`
+    <div>
+      <label class="form-label" for="${e}">${t}</label>
+      <textarea id="${e}" rows="${r}" class="form-textarea" placeholder="${n}">${l}</textarea>
+    </div>
+  `}function I(e="grid-cols-1 md:grid-cols-2",t=""){return`<div class="grid ${e} gap-4">${t}</div>`}function C(e,t,n="primary"){return`<button type="button" class="${n==="secondary"?"btn btn-secondary":"btn btn-primary"}" id="${e}">${t}</button>`}function N(e=[]){return`<div class="flex flex-col sm:flex-row justify-end gap-3 pt-4">${e.map(n=>C(n.id,n.label,n.style)).join(" ")}</div>`}function E(e=[],t=[]){const n=e.join(""),r=N(t);return`<div class="space-y-4">${n}${r}</div>`}function q(e,t={}){const n={};for(const[r,l]of Object.entries(t)){const c=e.querySelector(`#${l}`);c&&(n[r]=c.value)}return n}function S(e,t={}){for(const n of Object.values(t)){const r=e.querySelector(`#${n}`);r&&(r.type==="number"?r.value="":r.tagName==="SELECT"?r.selectedIndex=0:r.value="")}}const R=[{value:"owner",label:"owner"},{value:"broker",label:"broker"}];function A(e={}){return[$("client-name","الاسم","اسم العميل",e.name||""),g("client-phone","الهاتف","رقم الهاتف",e.phone||""),M("client-type","النوع",R,e.type||"owner")]}function P(e=[],t={}){const n=e.map(r=>({value:r.client_id,label:r.name}));return[$("chalet-name","الشاليه","اسم الشاليه",t.chalet_name||""),$("chalet-location","الموقع","الموقع الجغرافي",t.location||""),_("chalet-client","العميل",n,t.client_id||"","add-new-client-btn","+ عميل"),j("chalet-details","التفاصيل","تفاصيل الشاليه",4,t.details||"")]}function z(e=[],t=[],n={}){var i;const r=e.map(o=>({value:o.client_id,label:o.name})),l=n.client_id||((i=e[0])==null?void 0:i.client_id)||"",c=t.filter(o=>o.client_id===l).map(o=>({value:o.chalet_id,label:o.chalet_name})),s=[{value:"pending",label:"معلقة"},{value:"in_progress",label:"قيد التنفيذ"},{value:"done_unpaid",label:"تمت ولم يُدفع"},{value:"done_paid",label:"تمت ودُفع"},{value:"cancelled",label:"ملغاة"}];return[_("order-client","العميل",r,l,"add-client-btn","+ عميل"),_("order-chalet","الشاليه",c,n.chalet_id||"","add-chalet-btn","+ شاليه"),I("grid-cols-1 md:grid-cols-2",M("order-status","الحالة",s,n.status||"pending")+F("order-price","السعر","مثلاً 420",n.price||"")),I("grid-cols-1 md:grid-cols-2",x("order-scheduled","تاريخ التنفيذ",n.scheduled_at||"")+F("order-deposit","الديبوزيت","مثلاً 100",n.deposit||"")),j("order-notes","الملاحظات","تفاصيل إضافية",3,n.notes||"")]}function G(e={}){const t=A(e);return E(t,[{id:"save-client-button",label:"حفظ العميل"}])}function K(e=[],t={}){const n=P(e,t);return E(n,[{id:"save-chalet-button",label:"حفظ الشاليه"}])}function U(e=[],t=[],n={}){const r=z(e,t,n);return E(r,[{id:"save-order-button",label:"حفظ الطلب"}])}const f={notEmpty:(e,t)=>e!=null&&e.trim()?null:`${t} مطلوب`,phone:(e,t="الهاتف")=>e!=null&&e.trim()?/^(\+|00)?[0-9]{7,15}$/.test(e.replace(/\s/g,""))?null:`رقم ${t} غير صحيح`:`${t} مطلوب`,number:(e,t,n=!1)=>{if(e===""||e===null)return`${t} مطلوب`;const r=Number(e);return isNaN(r)?`${t} يجب أن يكون رقم`:!n&&r<=0?`${t} يجب أن يكون أكبر من 0`:null},email:(e,t="البريد الإلكتروني")=>e!=null&&e.trim()?/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)?null:`${t} غير صحيح`:`${t} مطلوب`};function L(e,t){const n={};for(const[r,l]of Object.entries(e))if(t[r]){const c=t[r](l);c&&(n[r]=c)}return n}function T(e){return Object.keys(e).length>0}function H(e){const t=Object.keys(e)[0];return e[t]}async function k(e=null,t=null){const n=document.getElementById("modal-root"),r=G(t||{});w(n,t?"تعديل عميل":"إضافة عميل جديد",r);const l=n.querySelector("#save-client-button");l==null||l.addEventListener("click",async()=>{const c=q(n,{name:"client-name",phone:"client-phone",type:"client-type"}),i=L(c,{name:o=>f.notEmpty(o,"الاسم"),phone:o=>f.phone(o,"الهاتف"),type:o=>f.notEmpty(o,"النوع")});if(T(i)){u("error",H(i));return}try{if(t&&t.client_id){const o=await y.updateClient(t.client_id,c);u("success","تم تعديل بيانات العميل"),n.innerHTML="",e&&e(o)}else{const o=await y.addClient(c);u("success","تم إضافة العميل بنجاح"),S(n,{name:"client-name",phone:"client-phone",type:"client-type"}),n.innerHTML="",e&&e(o)}}catch{u("error","حدث خطأ أثناء حفظ بيانات العميل")}})}async function V(e=[],t=null,n=null){const r=document.getElementById("modal-root"),l=K(e,n||{});w(r,n?"تعديل شاليه":"إضافة شاليه جديد",l);const c=r.querySelector("#chalet-client");r.querySelector("#chalet-name");const s=r.querySelector("#add-new-client-btn"),i=r.querySelector("#save-chalet-button");s==null||s.addEventListener("click",async()=>{await k(async o=>{const v=c.value;c.innerHTML+=`<option value="${o.client_id}">${o.name}</option>`,c.value=o.client_id})}),i==null||i.addEventListener("click",async()=>{const o=q(r,{chalet_name:"chalet-name",location:"chalet-location",client_id:"chalet-client",details:"chalet-details"}),h=L(o,{chalet_name:d=>f.notEmpty(d,"اسم الشاليه"),location:d=>f.notEmpty(d,"الموقع"),client_id:d=>f.notEmpty(d,"العميل")});if(T(h)){u("error",H(h));return}try{if(n&&n.chalet_id){const d=await y.updateChalet(n.chalet_id,o);u("success","تم تعديل الشاليه"),r.innerHTML="",t&&t(d)}else{const d=await y.addChalet(o);u("success","تم إضافة الشاليه بنجاح"),S(r,{chalet_name:"chalet-name",location:"chalet-location",client_id:"chalet-client",details:"chalet-details"}),r.innerHTML="",t&&t(d)}}catch{u("error","خطأ في حفظ الشاليه")}})}async function Q(e=[],t=[],n=null,r=null){const l=document.getElementById("modal-root"),c=U(e,t,r||{});w(l,r?"تعديل طلب":"إضافة طلب جديد",c);const s=l.querySelector("#order-client"),i=l.querySelector("#order-chalet"),o=l.querySelector("#add-client-btn"),v=l.querySelector("#add-chalet-btn"),h=l.querySelector("#save-order-button");function d(){const a=s.value,b=t.filter(m=>m.client_id===a);i.innerHTML=b.length?b.map(m=>`<option value="${m.chalet_id}">${m.chalet_name}</option>`).join(""):'<option value="">لا يوجد شاليهات</option>'}s==null||s.addEventListener("change",d),r&&(s.value=r.client_id||s.value,d(),i.value=r.chalet_id||i.value,l.querySelector("#order-status").value=r.status||l.querySelector("#order-status").value,l.querySelector("#order-price").value=r.price||l.querySelector("#order-price").value,l.querySelector("#order-notes").value=r.notes||l.querySelector("#order-notes").value,l.querySelector("#order-scheduled")&&(l.querySelector("#order-scheduled").value=r.scheduled_at||""),l.querySelector("#order-deposit")&&(l.querySelector("#order-deposit").value=r.deposit||0)),o==null||o.addEventListener("click",async()=>{await k(async a=>{e.push(a);const b=s.value;s.innerHTML+=`<option value="${a.client_id}">${a.name}</option>`,s.value=a.client_id,d()})}),v==null||v.addEventListener("click",async()=>{await V(e,async a=>{t.push(a);const b=s.value;a.client_id===b&&(i.innerHTML+=`<option value="${a.chalet_id}">${a.chalet_name}</option>`)})}),h==null||h.addEventListener("click",async()=>{const a=q(l,{client_id:"order-client",chalet_id:"order-chalet",status:"order-status",price:"order-price",notes:"order-notes",scheduled_at:"order-scheduled",deposit:"order-deposit"});a.deposit=Number(a.deposit||0);const m=L(a,{client_id:p=>f.notEmpty(p,"العميل"),chalet_id:p=>f.notEmpty(p,"الشاليه"),price:p=>f.number(p,"السعر"),status:p=>f.notEmpty(p,"الحالة")});if(T(m)){u("error",H(m));return}try{if(r&&r.order_id){const p={client_id:a.client_id,chalet_id:a.chalet_id,status:a.status,price:Number(a.price),notes:a.notes,scheduled_at:a.scheduled_at||"",deposit:Number(a.deposit||0)};await y.updateOrder(r.order_id,p),u("success","تم تحديث الطلب"),l.innerHTML="",n&&n()}else a.created_at=new Date().toISOString().split("T")[0],a.created_by=O.getUserName(),await y.addOrder({...a,price:Number(a.price)}),u("success","تم إضافة الطلب بنجاح"),S(l,{client_id:"order-client",chalet_id:"order-chalet",status:"order-status",price:"order-price",notes:"order-notes"}),l.innerHTML="",n&&n()}catch(p){console.error(p),u("error","خطأ في حفظ الطلب")}})}export{V as a,k as b,w as r,Q as s};
