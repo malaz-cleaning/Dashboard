@@ -84,7 +84,10 @@ import{a as _}from"./sidebar-84I8JWhY.js";import{s as k}from"./toast-ZwFb22xq.js
               <option value="cancelled" ${t.status==="cancelled"?"selected":""}>ملغاة</option>
             </select>
           </div>
-          <button type="button" class="mt-4 w-full rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-4 py-3 text-sm font-medium transition hover:bg-red-500/20 hover:text-red-100" data-action="delete-order" data-order-id="${t.order_id}">حذف الطلب</button>
+          <div class="mt-4 flex gap-2">
+            <button type="button" class="flex-1 rounded-lg border border-amber-500/20 bg-amber-500/10 text-amber-300 px-4 py-3 text-sm font-medium transition hover:bg-amber-500/20 hover:text-amber-100" data-action="edit-order" data-order-id="${t.order_id}">تعديل</button>
+            <button type="button" class="flex-1 rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 px-4 py-3 text-sm font-medium transition hover:bg-red-500/20 hover:text-red-100" data-action="delete-order" data-order-id="${t.order_id}">حذف</button>
+          </div>
         </div>
       `}).join("");return{tableRows:i,mobileCards:p}}async function T(a,r){return w?new Promise(s=>{const l=`
       <div class="space-y-4">
