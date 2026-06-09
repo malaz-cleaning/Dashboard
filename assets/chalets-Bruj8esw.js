@@ -1,4 +1,4 @@
-import{a as m,f as $,r as E}from"./sidebar-DBMzq2PB.js";import{a as M,s as g}from"./toast-DJo7gZdP.js";const r=document.getElementById("page-content"),h=document.getElementById("modal-root");async function T(n,s){await $(n,s)}function q(n,s,f){if(!n.length)return{rows:`
+import{a as m,f as $,r as E}from"./sidebar-BYx7eQyN.js";import{a as M,s as g}from"./toast-DJo7gZdP.js";const r=document.getElementById("page-content"),h=document.getElementById("modal-root");async function T(n,s){await $(n,s)}function q(n,s,f){if(!n.length)return{rows:`
         <tr class="table-row">
           <td colspan="9" class="px-6 py-12 text-center text-slate-400">لا يوجد شاليهات مطابقة.</td>
         </tr>
