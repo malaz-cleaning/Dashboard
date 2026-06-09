@@ -1,4 +1,4 @@
-import{a as y,f as $,e as C}from"./sidebar-jGvh9J_S.js";import{a as E,s as w}from"./toast-DJo7gZdP.js";const c=document.getElementById("page-content"),x=document.getElementById("modal-root");async function M(a){await $(a)}function j(a,f,v){if(!a.length)return{rows:`
+import{a as y,g as $,r as C}from"./sidebar-DBMzq2PB.js";import{a as E,s as w}from"./toast-DJo7gZdP.js";const c=document.getElementById("page-content"),x=document.getElementById("modal-root");async function M(a){await $(a)}function j(a,f,v){if(!a.length)return{rows:`
         <tr class="table-row">
           <td colspan="8" class="px-6 py-12 text-center text-slate-400">لا يوجد عملاء مطابقين.</td>
         </tr>
