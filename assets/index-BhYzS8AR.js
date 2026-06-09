@@ -216,7 +216,7 @@ import{a as ws,s as Pt,i as As}from"./toast-DJo7gZdP.js";/* empty css           
         </svg>
         التقويم
       </button>
-      <button class="btn-ghost w-full py-4 flex items-center justify-center gap-3 hover:bg-accent-amber/10 hover:text-accent-amber hover:border-accent-amber/50 transition-all" data-href="workers.html">
+      <button class="btn-ghost w-full py-4 flex items-center justify-center gap-3 hover:bg-accent-amber/10 hover:text-accent-amber hover:border-accent-amber/50 transition-all" data-href="index.html#attendance">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4-4a4 4 0 11-8 0 4 4 0 018 0z"/>
         </svg>
