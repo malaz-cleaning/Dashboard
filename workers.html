@@ -89,15 +89,17 @@
   .summary-title{text-align:center;font-size:0.85rem;color:var(--gold);letter-spacing:1px;font-weight:700;margin-bottom:18px;}
   @media (max-width: 900px) { .thead th {font-size:0.65rem;} .switch-button {width:100%;max-width:220px;} }
 </style>
-  <script type="module" crossorigin src="/Dashboard/assets/workers-B6R0wXzG.js"></script>
+  <script type="module" crossorigin src="/Dashboard/assets/workers-CJEicdmA.js"></script>
   <link rel="modulepreload" crossorigin href="/Dashboard/assets/toast-DJo7gZdP.js">
+  <link rel="modulepreload" crossorigin href="/Dashboard/assets/sidebar-DBGM9-BC.js">
+  <link rel="modulepreload" crossorigin href="/Dashboard/assets/orders-DdBUSm4G.js">
+  <link rel="modulepreload" crossorigin href="/Dashboard/assets/clients-BcGZfBbb.js">
+  <link rel="modulepreload" crossorigin href="/Dashboard/assets/chalets-CcFtkW-t.js">
+  <link rel="modulepreload" crossorigin href="/Dashboard/assets/analytics-CkuB0bnV.js">
+  <link rel="modulepreload" crossorigin href="/Dashboard/assets/app-B3UWrzLz.js">
   <link rel="modulepreload" crossorigin href="/Dashboard/assets/main-CvJC25iB.js">
-  <link rel="modulepreload" crossorigin href="/Dashboard/assets/sidebar-BYx7eQyN.js">
-  <link rel="modulepreload" crossorigin href="/Dashboard/assets/orders-CqE60mXO.js">
-  <link rel="modulepreload" crossorigin href="/Dashboard/assets/clients-CRC5Ldra.js">
-  <link rel="modulepreload" crossorigin href="/Dashboard/assets/chalets-Bruj8esw.js">
-  <link rel="modulepreload" crossorigin href="/Dashboard/assets/analytics-BPojQq6G.js">
-  <link rel="modulepreload" crossorigin href="/Dashboard/assets/app-BxrMDxTZ.js">
+  <link rel="modulepreload" crossorigin href="/Dashboard/assets/common-Co-fUQHA.js">
+  <link rel="stylesheet" crossorigin href="/Dashboard/assets/app-BxsrmQsK.css">
   <link rel="stylesheet" crossorigin href="/Dashboard/assets/styles-Clrp2Kcm.css">
 </head>
 <body class="max-w-full overflow-x-hidden">
@@ -111,47 +113,79 @@
           <div class="header-line"></div>
           <div class="logo-area">
             <div class="company-name-en">Malaz Cleaning</div>
-          </div>
-          <div class="page-title" id="page-title">📋 جدول حضور وغياب العمال — يوليو ٢٠٢٦ · الساحل الشمالي</div>
-          <div class="switch-row">
-            <button id="month-july" class="switch-button active">يوليو</button>
-            <button id="month-august" class="switch-button">أغسطس</button>
-          </div>
-          <div class="header-line" style="margin-top:16px;"></div>
-        </div>
+          <!DOCTYPE html>
+          <html lang="ar" dir="rtl">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+            <meta name="theme-color" content="#2563eb" />
+            <link rel="manifest" href="/Dashboard/assets/manifest-DeqKMrzs.json" />
+            <title>إدارة العمال - ملاذ</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+          </head>
+          <body class="max-w-full overflow-x-hidden">
+            <div id="app" class="app-shell">
+              <!-- Sidebar -->
+              <aside id="sidebar" class="sidebar"></aside>
 
-        <div class="legend">
-          <div class="legend-item"><div class="legend-dot legend-present">✔</div><span>حاضر</span></div>
-          <div class="legend-item"><div class="legend-dot legend-absent">✖</div><span>غائب</span></div>
-          <div class="legend-item"><div class="legend-dot legend-empty"></div><span>لم يُسجَّل</span></div>
-        </div>
+              <!-- Main Content -->
+              <div class="main-layout">
+                <header id="navbar" class="navbar"></header>
+                <main id="page-content" class="page-content">
+                  <div class="attendance-page">
+                    <div class="header">
+                      <div class="header-line"></div>
+                      <div class="logo-area">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABBoAAAJYCAYAAADMnIUCAAAAUGVYSWZNTQAqAAAACAAEAQAABAAAAAEAAAAAAQEABAAAAAEAAAAAh2kABAAAAAEAAAA+ARIABAAAAAEAAAAAAAAAAAABkggABAAAAAEAAAAAAAAAALFNWc4AAAtVaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8P3hwYWNrZXQgYmVnaW49Ij8iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgVGVzdC5TTkFQU0hPVCI+CiAgPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgeG1sbnM6QXR0cmliPSJodHRwOi8vbnMuYXR0cmlidXRpb24uY29tL2Fkcy8xLjAvIj4KICAgICAgPHJkZjpTZXE+CiAgICAgICAgPHJkZjpsaQogICAgICAgICAgIEF0dHJpYjpGYklkPSI1MjUyNjU5MTQxNzk1ODAiCiAgICAgICAgICAgIEF0dHJpYjpDcmVhdGVkPSI/Pz8/LT8/LT8/IgogICAgICAgICAgICBBdHRyaWI6VG91Y2hUeXBlPSIyIgogICAgICAgICAgICBBdHRyaWI6RXh0SWQ9IjdhMjRjNzc3LWYyM2MtNDkyMS1hNDBjLTJhN2EwZDA3ZGM4MyIvPgogICAgICAgICAgPHJkZjpsaQogICAgICAgICAgICBBdHRyaWI6RmJJZD0iNTI1MjY1OTE0MTc5NTgwIgogICAgICAgICAgICBBdHRyaWI6Q3JlYXRlZD0iPz8/Py0/Py0/PyIKICAgICAgICAgICAgQXR0cmliOlRvdWNoVHlwZT0iMiIKICAgICAgICAgICAgQXR0cmliOkV4dElkPSI5YjU5Y2VlMS04ZGZiLTRkMWItODM1My02YjdmNzllNzI3YjgiLz4KICAgICAgICA8L3JkZjpTZXE+CiAgICAgIDwvQXR0cmliOkFkcz4KICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+" alt="Malaz logo" class="logo-img" />
+                      </div>
+                      <div class="company-name-en">Malaz Cleaning</div>
+                      <div class="page-title" id="page-title"></div>
+                      <div class="switch-row">
+                        <button id="month-july" class="switch-button">يوليو</button>
+                        <button id="month-august" class="switch-button">أغسطس</button>
+                      </div>
+                      <div class="header-line" style="margin-top:16px;"></div>
+                    </div>
 
-        <div class="table-wrapper">
-          <table id="tbl">
-            <thead>
-              <tr id="hdr"></tr>
-            </thead>
-            <tbody id="tbd"></tbody>
-          </table>
-        </div>
+                    <div class="legend">
+                      <div class="legend-item"><div class="legend-dot legend-present">✔</div><span>حاضر</span></div>
+                      <div class="legend-item"><div class="legend-dot legend-absent">✖</div><span>غائب</span></div>
+                      <div class="legend-item"><div class="legend-dot legend-empty"></div><span>لم يُسجَّل</span></div>
+                    </div>
 
-        <div class="summary-section">
-          <div class="summary-title">📊 ملخص حضور وغياب العمال</div>
-          <div class="table-wrapper">
-            <table id="summary-table">
-              <thead>
-                <tr id="summary-hdr"></tr>
-              </thead>
-              <tbody id="summary-tbd"></tbody>
-            </table>
-          </div>
-        </div>
+                    <div class="table-wrapper">
+                      <table id="tbl">
+                        <thead><tr id="hdr"></tr></thead>
+                        <tbody id="tbd"></tbody>
+                      </table>
+                    </div>
 
-        <div class="footer">
-          <button id="save-btn" class="save-btn">💾 حفظ الآن</button>
-          <div class="sync-msg" id="syncMsg"></div>
-          <div class="footer-brand">Malaz Cleaning © 2026 — North Coast Egypt</div>
-        </div>
+                    <div class="summary-section">
+                      <div class="summary-title">📊 ملخص الحضور والغياب لكل عامل</div>
+                      <div class="workers-grid" id="workersGrid"></div>
+                      <div class="summary-table-wrapper" style="margin-top:18px;">
+                        <table id="summary-table" class="summary-table">
+                          <thead><tr id="summary-hdr"></tr></thead>
+                          <tbody id="summary-tbd"></tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div class="footer">
+                      <button id="save-btn" class="save-btn">💾 حفظ البيانات</button>
+                      <div class="sync-msg" id="syncMsg"></div>
+                      <div class="footer-brand">Malaz Cleaning © 2026 — North Coast Egypt</div>
+                    </div>
+                  </div>
+                </main>
+              </div>
+            </div>
+            <div id="modal-root"></div>
+            <div id="toast-root" class="toast-root" aria-live="polite"></div>
+          </body>
+          </html>
       </main>
     </div>
   </div>

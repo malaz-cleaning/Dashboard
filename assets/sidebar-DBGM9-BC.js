@@ -174,14 +174,14 @@ import{a as x,s as y}from"./toast-DJo7gZdP.js";const Y={clients:[],chalets:[],or
           `:""}
         </a>
 
-        <a class="sidebar-link text-sm lg:text-base ${window.location.hash.includes("#attendance")?"sidebar-link-active":""}" href="#attendance">
+        <a class="sidebar-link text-sm lg:text-base ${window.location.pathname.includes("workers")?"sidebar-link-active":""}" href="workers.html">
           <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-emerald/20 to-accent-cyan/20 flex items-center justify-center">
             <svg class="w-5 h-5 text-accent-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </div>
           <span class="sidebar-link-text">إدارة العمال</span>
-          ${window.location.hash.includes("#attendance")?`
+          ${window.location.pathname.includes("workers")?`
             <div class="w-2 h-2 bg-accent-emerald rounded-full animate-pulse"></div>
           `:""}
         </a>
@@ -259,4 +259,4 @@ import{a as x,s as y}from"./toast-DJo7gZdP.js";const Y={clients:[],chalets:[],or
     ${t?`
       <div class="sidebar-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden opacity-0 pointer-events-none transition-opacity duration-300" id="sidebar-overlay"></div>
     `:""}
-  `;const n=e.querySelector("#sidebar-logout");n==null||n.addEventListener("click",()=>{x.logout()});const a=()=>{var r;const s=window.innerWidth<1024;e.classList.toggle("collapsed",s),s||(e.classList.remove("open"),(r=document.querySelector(".app-shell"))==null||r.classList.remove("sidebar-open"))};window.addEventListener("resize",a);let l=s=>{};if(t){const s=e,r=e.querySelector("#sidebar-overlay"),i=e.querySelector("#sidebar-close"),o=document.querySelector(".app-shell");l=c=>{c?(s==null||s.classList.remove("collapsed"),s==null||s.classList.add("open"),o==null||o.classList.add("sidebar-open"),r==null||r.classList.remove("opacity-0","pointer-events-none"),r==null||r.classList.add("opacity-100","pointer-events-auto")):(s==null||s.classList.add("collapsed"),s==null||s.classList.remove("open"),o==null||o.classList.remove("sidebar-open"),r==null||r.classList.remove("opacity-100","pointer-events-auto"),r==null||r.classList.add("opacity-0","pointer-events-none"))},r==null||r.addEventListener("click",()=>l(!1)),i==null||i.addEventListener("click",()=>l(!1)),e.querySelectorAll(".sidebar-link").forEach(c=>{c.addEventListener("click",()=>l(!1))})}window.toggleSidebar=l}export{S as a,pe as b,fe as c,be as d,he as e,de as f,J as g,T as r,me as s};
+  `;const n=e.querySelector("#sidebar-logout");n==null||n.addEventListener("click",()=>{x.logout()});const a=()=>{var r;const s=window.innerWidth<1024;e.classList.toggle("collapsed",s),s||(e.classList.remove("open"),(r=document.querySelector(".app-shell"))==null||r.classList.remove("sidebar-open"))};window.addEventListener("resize",a);let l=s=>{};if(t){const s=e,r=e.querySelector("#sidebar-overlay"),i=e.querySelector("#sidebar-close"),o=document.querySelector(".app-shell");l=c=>{c?(s==null||s.classList.remove("collapsed"),s==null||s.classList.add("open"),o==null||o.classList.add("sidebar-open"),r==null||r.classList.remove("opacity-0","pointer-events-none"),r==null||r.classList.add("opacity-100","pointer-events-auto")):(s==null||s.classList.add("collapsed"),s==null||s.classList.remove("open"),o==null||o.classList.remove("sidebar-open"),r==null||r.classList.remove("opacity-100","pointer-events-auto"),r==null||r.classList.add("opacity-0","pointer-events-none"))},r==null||r.addEventListener("click",()=>l(!1)),i==null||i.addEventListener("click",()=>l(!1)),e.querySelectorAll(".sidebar-link").forEach(c=>{c.addEventListener("click",()=>l(!1))})}window.toggleSidebar=l}export{S as a,pe as b,fe as c,he as d,be as e,de as f,J as g,T as r,me as s};
